@@ -1,0 +1,90 @@
+<resources>
+    <string name="app_name">Ví Thông Minh</string>
+
+    <!-- Điều hướng chính -->
+    <string name="nav_overview">Tổng quan</string>
+    <string name="nav_transactions">Giao dịch</string>
+    <string name="nav_statistics">Thống kê</string>
+    <string name="nav_budget">Ngân sách</string>
+    <string name="nav_savings">Tiết kiệm</string>
+
+    <!-- Tổng quan -->
+    <string name="overview_title">Tổng quan tài chính</string>
+    <string name="current_balance">Tổng số dư hiện tại</string>
+    <string name="monthly_income">Thu nhập tháng</string>
+    <string name="monthly_expense">Chi tiêu tháng</string>
+    <string name="monthly_budget_remaining">Ngân sách còn lại</string>
+    <string name="budget_progress">Tiến độ ngân sách tháng</string>
+    <string name="recent_transactions">Giao dịch gần đây</string>
+    <string name="view_all">Xem tất cả</string>
+    <string name="btn_add_transaction">Thêm giao dịch</string>
+    <string name="warning_budget_over">Cảnh báo: Bạn đã chi tiêu vượt quá ngân sách tháng!</string>
+    <string name="warning_budget_near">Chú ý: Bạn đã sử dụng hơn 80% ngân sách tháng!</string>
+
+    <!-- Quản lý giao dịch -->
+    <string name="transactions_title">Danh sách giao dịch</string>
+    <string name="add_transaction_title">Thêm giao dịch mới</string>
+    <string name="edit_transaction_title">Chỉnh sửa giao dịch</string>
+    <string name="type_income">Thu nhập</string>
+    <string name="type_expense">Chi tiêu</string>
+    <string name="amount_label">Số tiền (VNĐ)</string>
+    <string name="amount_hint">Nhập số tiền...</string>
+    <string name="category_label">Danh mục</string>
+    <string name="date_label">Ngày giao dịch</string>
+    <string name="note_label">Ghi chú (không bắt buộc)</string>
+    <string name="note_hint">Ví dụ: Cơm trưa, Xăng xe, Lương...</string>
+    <string name="btn_save">Lưu lại</string>
+    <string name="btn_cancel">Hủy</string>
+    <string name="btn_delete">Xóa</string>
+    <string name="btn_edit">Sửa</string>
+    <string name="confirm_delete_title">Xác nhận xóa</string>
+    <string name="confirm_delete_msg">Bạn có chắc chắn muốn xóa giao dịch này không?</string>
+    <string name="search_hint">Tìm theo ghi chú...</string>
+    <string name="filter_all">Tất cả</string>
+    <string name="sort_newest">Mới nhất</string>
+    <string name="sort_oldest">Cũ nhất</string>
+    <string name="no_transactions">Chưa có giao dịch nào.</string>
+
+    <!-- Thống kê -->
+    <string name="statistics_title">Thống kê chi tiêu</string>
+    <string name="tab_week">Tuần</string>
+    <string name="tab_month">Tháng</string>
+    <string name="tab_year">Năm</string>
+    <string name="chart_pie_title">Tỷ trọng chi tiêu theo danh mục</string>
+    <string name="chart_bar_title">So sánh Thu nhập và Chi tiêu</string>
+    <string name="category_breakdown">Chi tiết theo danh mục</string>
+    <string name="no_data_statistics">Chưa có dữ liệu giao dịch trong khoảng thời gian này.</string>
+
+    <!-- Ngân sách -->
+    <string name="budget_title">Quản lý ngân sách</string>
+    <string name="add_budget_title">Thiết lập ngân sách</string>
+    <string name="edit_budget_title">Chỉnh sửa ngân sách</string>
+    <string name="budget_monthly_total">Ngân sách tổng tháng</string>
+    <string name="budget_spent">Đã chi</string>
+    <string name="budget_remaining">Còn lại</string>
+    <string name="budget_category">Ngân sách theo danh mục</string>
+    <string name="add_category_budget">Thêm ngân sách danh mục</string>
+    <string name="no_budgets">Chưa thiết lập ngân sách cho tháng này.</string>
+
+    <!-- Mục tiêu tiết kiệm -->
+    <string name="savings_title">Mục tiêu tiết kiệm</string>
+    <string name="add_savings_title">Tạo mục tiêu tiết kiệm</string>
+    <string name="edit_savings_title">Chỉnh sửa mục tiêu</string>
+    <string name="savings_name_hint">Tên mục tiêu (ví dụ: Mua điện thoại, Mua xe...)</string>
+    <string name="savings_target_amount">Số tiền mục tiêu (VNĐ)</string>
+    <string name="savings_initial_amount">Số tiền đã có ban đầu (VNĐ)</string>
+    <string name="savings_current_amount">Số tiền hiện có</string>
+    <string name="savings_add_money">Nạp thêm tiền</string>
+    <string name="savings_progress">Tiến độ</string>
+    <string name="savings_completed">Đã hoàn thành!</string>
+    <string name="no_savings_goals">Chưa có mục tiêu tiết kiệm nào.</string>
+
+    <!-- Thông báo lỗi & cảnh báo -->
+    <string name="err_invalid_amount">Vui lòng nhập số tiền hợp lệ lớn hơn 0!</string>
+    <string name="err_empty_category">Vui lòng chọn danh mục!</string>
+    <string name="err_empty_name">Vui lòng nhập tên mục tiêu!</string>
+    <string name="err_save_failed">Lỗi khi lưu dữ liệu, vui lòng thử lại!</string>
+    <string name="msg_saved_success">Lưu thành công!</string>
+    <string name="msg_deleted_success">Đã xóa thành công!</string>
+    <string name="msg_savings_congrats">Chúc mừng! Bạn đã hoàn thành mục tiêu tiết kiệm này!</string>
+</resources>

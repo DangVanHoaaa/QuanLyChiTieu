@@ -1,0 +1,63 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme: Ép buộc Light Theme để luôn có nền sáng hiện đại, tinh tế -->
+    <style name="Theme.QuanLyChiTieu" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <!-- Primary brand color: Xanh lá tươi sáng, hiện đại -->
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimaryVariant">@color/primary_dark</item>
+        <item name="colorOnPrimary">@color/text_white</item>
+
+        <!-- Secondary brand color -->
+        <item name="colorSecondary">@color/primary_variant</item>
+        <item name="colorSecondaryVariant">@color/primary_dark</item>
+        <item name="colorOnSecondary">@color/text_white</item>
+
+        <!-- Status bar màu trắng hiện đại, icon màu đen -->
+        <item name="android:statusBarColor">@color/surface_white</item>
+        <item name="android:windowLightStatusBar">true</item>
+
+        <!-- Background color -->
+        <item name="android:windowBackground">@color/bg_light</item>
+
+        <!-- Áp dụng style chuẩn cho Chip -->
+        <item name="chipStyle">@style/CustomChipStyle</item>
+    </style>
+
+    <!-- Theme Xanh Đại Dương -->
+    <style name="Theme.QuanLyChiTieu.Blue" parent="Theme.QuanLyChiTieu">
+        <item name="colorPrimary">@color/theme_blue_primary</item>
+        <item name="colorPrimaryVariant">@color/theme_blue_dark</item>
+        <item name="colorSecondary">@color/theme_blue_primary</item>
+    </style>
+
+    <!-- Theme Tím Quý Phái -->
+    <style name="Theme.QuanLyChiTieu.Purple" parent="Theme.QuanLyChiTieu">
+        <item name="colorPrimary">@color/theme_purple_primary</item>
+        <item name="colorPrimaryVariant">@color/theme_purple_dark</item>
+        <item name="colorSecondary">@color/theme_purple_primary</item>
+    </style>
+
+    <!-- Theme Cam Năng Động -->
+    <style name="Theme.QuanLyChiTieu.Orange" parent="Theme.QuanLyChiTieu">
+        <item name="colorPrimary">@color/theme_orange_primary</item>
+        <item name="colorPrimaryVariant">@color/theme_orange_dark</item>
+        <item name="colorSecondary">@color/theme_orange_primary</item>
+    </style>
+
+    <!-- Theme Hồng Hiện Đại -->
+    <style name="Theme.QuanLyChiTieu.Pink" parent="Theme.QuanLyChiTieu">
+        <item name="colorPrimary">@color/theme_pink_primary</item>
+        <item name="colorPrimaryVariant">@color/theme_pink_dark</item>
+        <item name="colorSecondary">@color/theme_pink_primary</item>
+    </style>
+
+    <!-- Custom Chip Style sáng sủa, thanh lịch -->
+    <style name="CustomChipStyle" parent="Widget.MaterialComponents.Chip.Choice">
+        <item name="chipBackgroundColor">@color/chip_background_selector</item>
+        <item name="android:textColor">@color/chip_text_selector</item>
+        <item name="chipCornerRadius">16dp</item>
+        <item name="chipStrokeWidth">1dp</item>
+        <item name="chipStrokeColor">#E2E8F0</item>
+        <item name="checkedIconVisible">false</item>
+        <item name="rippleColor">#3016A34A</item>
+    </style>
+</resources>
