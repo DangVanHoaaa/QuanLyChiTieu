@@ -22,6 +22,7 @@ import com.example.quanlychitieu.adapter.TransactionAdapter;
 import com.example.quanlychitieu.model.Transaction;
 import com.example.quanlychitieu.repository.ExpenseRepository;
 import com.example.quanlychitieu.ui.dialog.TransactionDialogHelper;
+import com.example.quanlychitieu.utils.CurrencyUtils;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -179,9 +180,22 @@ public class TransactionsFragment extends Fragment implements TransactionAdapter
 
     @Override
     public void onDelete(Transaction transaction) {
+        boolean isIncome = "INCOME".equalsIgnoreCase(transaction.getType());
+        String amountFormatted = CurrencyUtils.formatVnd(transaction.getAmount());
+        String message;
+        if (isIncome) {
+            message = "Bạn đang chọn xóa khoản Thu nhập: + " + amountFormatted + " (" + transaction.getCategoryName() + ")\n\n"
+                    + "⚠️ Lưu ý: Vì đây là khoản thu vào ví, khi xóa thì Tổng số dư hiện tại sẽ bị TRỪ ĐI " + amountFormatted + ".\n\n"
+                    + "Bạn có chắc chắn muốn xóa không?";
+        } else {
+            message = "Bạn đang chọn xóa khoản Chi tiêu: - " + amountFormatted + " (" + transaction.getCategoryName() + ")\n\n"
+                    + "💡 Khoản chi này sẽ bị hủy bỏ, tiền sẽ được hoàn lại giúp Tổng số dư hiện tại TĂNG THÊM " + amountFormatted + ".\n\n"
+                    + "Bạn có chắc chắn muốn xóa không?";
+        }
+
         new AlertDialog.Builder(requireContext())
                 .setTitle(R.string.confirm_delete_title)
-                .setMessage(R.string.confirm_delete_msg)
+                .setMessage(message)
                 .setPositiveButton(R.string.btn_delete, (dialog, which) -> {
                     repository.deleteTransaction(transaction, res -> {
                         if (getActivity() != null) {

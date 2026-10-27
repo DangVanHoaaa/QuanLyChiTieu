@@ -12,6 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.LiveData;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -65,6 +66,7 @@ public class StatisticsFragment extends Fragment {
 
     private List<Transaction> currentTransactions = new ArrayList<>();
     private int selectedTimeMode = 1; // 0: Week, 1: Month, 2: Year
+    private LiveData<List<Transaction>> currentStatLiveData;
 
     @Nullable
     @Override
@@ -192,7 +194,36 @@ public class StatisticsFragment extends Fragment {
         });
     }
 
+    @Override
+    public void onHiddenChanged(boolean hidden) {
+        super.onHiddenChanged(hidden);
+        if (!hidden && isAdded()) {
+            loadStatisticsData();
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (isAdded()) {
+            loadStatisticsData();
+        }
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (currentStatLiveData != null) {
+            try {
+                currentStatLiveData.removeObservers(getViewLifecycleOwner());
+            } catch (Exception ignored) {}
+            currentStatLiveData = null;
+        }
+    }
+
     private void loadStatisticsData() {
+        if (!isAdded()) return;
+
         String startDate, endDate;
         if (selectedTimeMode == 0) { // Tuần
             String[] weekRange = DateUtils.getStartAndEndOfWeek();
@@ -213,10 +244,31 @@ public class StatisticsFragment extends Fragment {
             tvTimeRangeLabel.setText("Năm " + currentYear);
         }
 
-        repository.getTransactionsBetweenDates(startDate, endDate, list -> {
-            if (getActivity() == null) return;
-            getActivity().runOnUiThread(() -> updateUiWithData(list));
-        });
+        // Hủy observer cũ của khoảng thời gian trước đó
+        if (currentStatLiveData != null) {
+            try {
+                currentStatLiveData.removeObservers(getViewLifecycleOwner());
+            } catch (Exception ignored) {}
+        }
+
+        // Đăng ký LiveData theo thời gian thực: Tự động cập nhật ngay khi thêm / xóa / sửa bất kỳ giao dịch nào
+        try {
+            currentStatLiveData = repository.getTransactionsBetweenDatesLiveData(startDate, endDate);
+            currentStatLiveData.observe(getViewLifecycleOwner(), list -> {
+                if (isAdded() && getContext() != null) {
+                    updateUiWithData(list);
+                }
+            });
+        } catch (Exception e) {
+            repository.getTransactionsBetweenDates(startDate, endDate, list -> {
+                if (getActivity() == null) return;
+                getActivity().runOnUiThread(() -> {
+                    if (isAdded() && getContext() != null) {
+                        updateUiWithData(list);
+                    }
+                });
+            });
+        }
     }
 
     private void updateUiWithData(List<Transaction> transactions) {

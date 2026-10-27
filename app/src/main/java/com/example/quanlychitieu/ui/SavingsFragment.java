@@ -104,6 +104,14 @@ public class SavingsFragment extends Fragment implements SavingsGoalAdapter.OnSa
         }
     }
 
+    @Override
+    public void onHiddenChanged(boolean hidden) {
+        super.onHiddenChanged(hidden);
+        if (!hidden && isAdded()) {
+            filterAndSortSavingsGoals();
+        }
+    }
+
     private void observeGoals() {
         repository.getAllSavingsGoals().observe(getViewLifecycleOwner(), list -> {
             allGoals = list != null ? list : new ArrayList<>();

@@ -145,22 +145,26 @@ public class SavingsDialogHelper {
                 return;
             }
 
-            double newCurrent = goal.getCurrentAmount() + addAmount;
-            goal.setCurrentAmount(newCurrent);
             boolean wasCompletedBefore = goal.isCompleted();
-            boolean isCompletedNow = newCurrent >= goal.getTargetAmount();
-            goal.setCompleted(isCompletedNow);
+            boolean isCompletedNow = (goal.getCurrentAmount() + addAmount) >= goal.getTargetAmount();
 
-            repository.updateSavingsGoal(goal, res -> {
-                dialog.dismiss();
-                if (listener != null) listener.onSaved();
+            repository.depositToSavingsGoal(goal, addAmount, res -> {
+                if (context instanceof android.app.Activity) {
+                    ((android.app.Activity) context).runOnUiThread(() -> {
+                        dialog.dismiss();
+                        if (listener != null) listener.onSaved();
+
+                        if (!wasCompletedBefore && isCompletedNow) {
+                            Toast.makeText(context, R.string.msg_savings_congrats, Toast.LENGTH_LONG).show();
+                        } else {
+                            Toast.makeText(context, "Đã nạp " + CurrencyUtils.formatVnd(addAmount) + " vào mục tiêu và trừ vào số dư ví!", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                } else {
+                    dialog.dismiss();
+                    if (listener != null) listener.onSaved();
+                }
             });
-
-            if (!wasCompletedBefore && isCompletedNow) {
-                Toast.makeText(context, R.string.msg_savings_congrats, Toast.LENGTH_LONG).show();
-            } else {
-                Toast.makeText(context, "Đã nạp thêm " + CurrencyUtils.formatVnd(addAmount) + " vào mục tiêu!", Toast.LENGTH_SHORT).show();
-            }
         });
 
         dialog.show();

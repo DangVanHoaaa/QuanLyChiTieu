@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
         android:allowBackup="true"
@@ -34,6 +35,14 @@
             android:theme="@style/Theme.QuanLyChiTieu"
             android:windowSoftInputMode="adjustResize" />
 
+        <!-- Màn hình Duyệt Giao dịch Ngân hàng -->
+        <activity
+            android:name=".ui.PendingApprovalActivity"
+            android:exported="true"
+            android:label="Duyệt giao dịch ngân hàng"
+            android:theme="@style/Theme.QuanLyChiTieu"
+            android:windowSoftInputMode="adjustResize" />
+
         <!-- FileProvider để mở và chia sẻ file Excel / PDF -->
         <provider
             android:name="androidx.core.content.FileProvider"
@@ -44,6 +53,17 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
+
+        <!-- Service tự động đọc thông báo giao dịch từ app ngân hàng -->
+        <service
+            android:name=".service.BankNotificationListenerService"
+            android:exported="true"
+            android:label="Tự động đọc thông báo ngân hàng"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+        </service>
     </application>
 
 </manifest>

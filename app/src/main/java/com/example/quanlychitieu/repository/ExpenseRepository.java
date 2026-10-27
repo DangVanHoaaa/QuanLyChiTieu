@@ -13,6 +13,7 @@ import com.example.quanlychitieu.model.Budget;
 import com.example.quanlychitieu.model.Category;
 import com.example.quanlychitieu.model.SavingsGoal;
 import com.example.quanlychitieu.model.Transaction;
+import com.example.quanlychitieu.utils.DateUtils;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -138,6 +139,10 @@ public class ExpenseRepository {
         });
     }
 
+    public LiveData<List<Transaction>> getTransactionsBetweenDatesLiveData(String start, String end) {
+        return transactionDao.getTransactionsBetweenDates(start, end);
+    }
+
     public void getTransactionsByMonthSync(String monthPrefix, Callback<List<Transaction>> callback) {
         executorService.execute(() -> {
             List<Transaction> list = transactionDao.getTransactionsByMonthSync(monthPrefix);
@@ -256,6 +261,51 @@ public class ExpenseRepository {
     public void deleteSavingsGoal(SavingsGoal goal, Callback<Void> callback) {
         executorService.execute(() -> {
             savingsGoalDao.delete(goal);
+            if (callback != null) {
+                callback.onComplete(null);
+            }
+        });
+    }
+
+    /**
+     * Nạp tiền vào mục tiêu tiết kiệm và tự động tạo giao dịch Chi tiêu để trừ vào tổng số dư hiện tại
+     */
+    public void depositToSavingsGoal(SavingsGoal goal, double depositAmount, Callback<Void> callback) {
+        executorService.execute(() -> {
+            // 1. Cập nhật số tiền hiện tại của mục tiêu tiết kiệm
+            double newCurrent = goal.getCurrentAmount() + depositAmount;
+            goal.setCurrentAmount(newCurrent);
+            goal.setCompleted(newCurrent >= goal.getTargetAmount());
+            savingsGoalDao.update(goal);
+
+            // 2. Tìm hoặc tự động tạo danh mục "Tiết kiệm"
+            int catId = -1;
+            List<Category> categories = categoryDao.getCategoriesByTypeSync("EXPENSE");
+            if (categories != null) {
+                for (Category c : categories) {
+                    if ("Tiết kiệm".equalsIgnoreCase(c.getName())) {
+                        catId = c.getId();
+                        break;
+                    }
+                }
+            }
+            if (catId == -1) {
+                Category cat = new Category("Tiết kiệm", "EXPENSE", "ic_nav_savings", "#059669");
+                catId = (int) categoryDao.insert(cat);
+            }
+
+            // 3. Tạo giao dịch chi tiêu để trừ vào tổng số dư hiện tại
+            Transaction tx = new Transaction(
+                    "EXPENSE",
+                    depositAmount,
+                    catId,
+                    "Tiết kiệm",
+                    DateUtils.getTodayIso(),
+                    "Nạp tiền tiết kiệm: " + goal.getName(),
+                    System.currentTimeMillis()
+            );
+            transactionDao.insert(tx);
+
             if (callback != null) {
                 callback.onComplete(null);
             }

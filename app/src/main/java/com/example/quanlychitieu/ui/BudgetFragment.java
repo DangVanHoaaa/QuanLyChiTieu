@@ -145,6 +145,14 @@ public class BudgetFragment extends Fragment implements BudgetAdapter.OnBudgetAc
         }
     }
 
+    @Override
+    public void onHiddenChanged(boolean hidden) {
+        super.onHiddenChanged(hidden);
+        if (!hidden && isAdded()) {
+            filterAndSortCategoryBudgets();
+        }
+    }
+
     private void observeBudgetData() {
         // Chi tiêu tổng của tháng
         repository.getMonthlyExpense(currentMonth).observe(getViewLifecycleOwner(), spent -> {

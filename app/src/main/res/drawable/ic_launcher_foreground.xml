@@ -1,30 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:aapt="http://schemas.android.com/aapt"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <path android:pathData="M31,63.928c0,0 6.4,-11 12.1,-13.1c7.2,-2.6 26,-1.4 26,-1.4l38.1,38.1L107,108.928l-32,-1L31,63.928z">
+
+    <!-- 1. THẺ NGÂN HÀNG (CARDS) -->
+    <!-- Thẻ Gold VIP (phía sau bên phải) -->
+    <path android:pathData="M48,27h26a3,3 0,0 1,3 3v21h-32v-21a3,3 0,0 1,3 -3z">
         <aapt:attr name="android:fillColor">
             <gradient
-                android:endX="85.84757"
-                android:endY="92.4963"
-                android:startX="42.9492"
-                android:startY="49.59793"
+                android:startX="48"
+                android:startY="27"
+                android:endX="77"
+                android:endY="51"
                 android:type="linear">
-                <item
-                    android:color="#44000000"
-                    android:offset="0.0" />
-                <item
-                    android:color="#00000000"
-                    android:offset="1.0" />
+                <item android:color="#FBBF24" android:offset="0.0" />
+                <item android:color="#D97706" android:offset="1.0" />
             </gradient>
         </aapt:attr>
     </path>
+    <!-- Vạch dải băng vàng trên thẻ -->
+    <path
+        android:fillColor="#FDE68A"
+        android:pathData="M52,32h20v2.5h-20z" />
+
+    <!-- Thẻ Cyan Tech (phía trước bên trái) -->
+    <path android:pathData="M31,31h32a3,3 0,0 1,3 3v21h-38v-21a3,3 0,0 1,3 -3z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="31"
+                android:startY="31"
+                android:endX="66"
+                android:endY="55"
+                android:type="linear">
+                <item android:color="#38BDF8" android:offset="0.0" />
+                <item android:color="#0284C7" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <!-- Chip thông minh EMV trên thẻ -->
+    <path
+        android:fillColor="#FEF08A"
+        android:pathData="M35,36h6a1,1 0,0 1,1 1v4a1,1 0,0 1,-1 1h-6a1,1 0,0 1,-1 -1v-4a1,1 0,0 1,1 -1z" />
+    <path
+        android:strokeColor="#B45309"
+        android:strokeWidth="0.4"
+        android:pathData="M38,36v6 M35,39h7" />
+
+    <!-- 2. THÂN VÍ THÔNG MINH (LEATHER WALLET BODY) -->
+    <!-- Đổ bóng đáy ví -->
+    <path
+        android:fillColor="#33000000"
+        android:pathData="M31,46h46a7,7 0,0 1,7 7v27a7,7 0,0 1,-7 7h-46a7,7 0,0 1,-7 -7v-27a7,7 0,0 1,7 -7z" />
+
+    <!-- Mặt da chính của ví -->
+    <path android:pathData="M31,44h46a7,7 0,0 1,7 7v26a7,7 0,0 1,-7 7h-46a7,7 0,0 1,-7 -7v-26a7,7 0,0 1,7 -7z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="24"
+                android:startY="44"
+                android:endX="84"
+                android:endY="84"
+                android:type="linear">
+                <item android:color="#0F4C3A" android:offset="0.0" />
+                <item android:color="#062E23" android:offset="0.6" />
+                <item android:color="#031B15" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Đường viền kim loại nổi bật -->
+    <path
+        android:strokeWidth="0.9"
+        android:strokeColor="#34D399"
+        android:pathData="M31,44h46a7,7 0,0 1,7 7v26a7,7 0,0 1,-7 7h-46a7,7 0,0 1,-7 -7v-26a7,7 0,0 1,7 -7z" />
+
+    <!-- Ngăn trước vát cong sang trọng (Curved Front Flap) -->
+    <path android:pathData="M24,56 C38,60 62,60 84,56 v21 a7,7 0,0 1,-7 7 h-46 a7,7 0,0 1,-7 -7 z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="24"
+                android:startY="56"
+                android:endX="84"
+                android:endY="84"
+                android:type="linear">
+                <item android:color="#0A4333" android:offset="0.0" />
+                <item android:color="#04231B" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <!-- Gờ miệng ngăn ví -->
+    <path
+        android:strokeWidth="0.7"
+        android:strokeColor="#6EE7B7"
+        android:pathData="M24,56 C38,60 62,60 84,56" />
+
+    <!-- 3. KHÓA DA & ĐỒNG XU VÀNG MONOGRAM "V" -->
+    <!-- Quai cài da -->
+    <path
+        android:fillColor="#062A20"
+        android:strokeColor="#34D399"
+        android:strokeWidth="0.7"
+        android:pathData="M58,58h26v15h-26a6,6 0,0 1,-6 -6v-3a6,6 0,0 1,6 -6z" />
+
+    <!-- Bóng đổ đồng xu -->
+    <path
+        android:fillColor="#44000000"
+        android:pathData="M72,66m-8,0a8,8 0,1 1,16 0a8,8 0,1 1,-16 0" />
+
+    <!-- Vành ngoài đồng xu vàng óng -->
+    <path android:pathData="M72,65m-7.5,0a7.5,7.5 0,1 1,15 0a7.5,7.5 0,1 1,-15 0">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:centerX="70"
+                android:centerY="63"
+                android:gradientRadius="7.5"
+                android:type="radial">
+                <item android:color="#FEF08A" android:offset="0.0" />
+                <item android:color="#F59E0B" android:offset="0.7" />
+                <item android:color="#B45309" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Vành trong đồng xu -->
+    <path android:pathData="M72,65m-5.8,0a5.8,5.8 0,1 1,11.6 0a5.8,5.8 0,1 1,-11.6 0">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="72"
+                android:startY="59"
+                android:endX="72"
+                android:endY="71"
+                android:type="linear">
+                <item android:color="#FBBF24" android:offset="0.0" />
+                <item android:color="#D97706" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Chữ "V" (Ví Thông Minh / Victory) dập nổi trên đồng xu -->
     <path
         android:fillColor="#FFFFFF"
-        android:fillType="nonZero"
-        android:pathData="M65.3,45.828l3.8,-6.6c0.2,-0.4 0.1,-0.9 -0.3,-1.1c-0.4,-0.2 -0.9,-0.1 -1.1,0.3l-3.9,6.7c-6.3,-2.8 -13.4,-2.8 -19.7,0l-3.9,-6.7c-0.2,-0.4 -0.7,-0.5 -1.1,-0.3C38.8,38.328 38.7,38.828 38.9,39.228l3.8,6.6C36.2,49.428 31.7,56.028 31,63.928h46C76.3,56.028 71.8,49.428 65.3,45.828zM43.4,57.328c-0.8,0 -1.5,-0.5 -1.8,-1.2c-0.3,-0.7 -0.1,-1.5 0.4,-2.1c0.5,-0.5 1.4,-0.7 2.1,-0.4c0.7,0.3 1.2,1 1.2,1.8C45.3,56.528 44.5,57.328 43.4,57.328L43.4,57.328zM64.6,57.328c-0.8,0 -1.5,-0.5 -1.8,-1.2s-0.1,-1.5 0.4,-2.1c0.5,-0.5 1.4,-0.7 2.1,-0.4c0.7,0.3 1.2,1 1.2,1.8C66.5,56.528 65.6,57.328 64.6,57.328L64.6,57.328z"
-        android:strokeWidth="1"
-        android:strokeColor="#00000000" />
+        android:pathData="M69.2,62.5 L72,67.8 L74.8,62.5 L73.5,62.5 L72,65.5 L70.5,62.5 Z" />
+
+    <!-- 4. NGÔI SAO TRÍ TUỆ NHÂN TẠO SMART SPARKLES ✨ -->
+    <!-- Sao lớn góc trên bên phải (Tượng trưng cho "Thông Minh" / AI) -->
+    <path
+        android:fillColor="#FEF08A"
+        android:pathData="M83,18 C83,24 83,24 89,24 C83,24 83,24 83,30 C83,24 83,24 77,24 C83,24 83,24 83,18 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M83,24m-1.5,0a1.5,1.5 0,1 1,3 0a1.5,1.5 0,1 1,-3 0" />
+
+    <!-- Sao nhỏ góc trên bên trái -->
+    <path
+        android:fillColor="#6EE7B7"
+        android:pathData="M24,28 C24,32 24,32 28,32 C24,32 24,32 24,36 C24,32 24,32 20,32 C24,32 24,32 24,28 Z" />
+
 </vector>

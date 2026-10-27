@@ -70,10 +70,12 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
             holder.tvAmount.setText(CurrencyUtils.formatVndWithSign(item.getAmount(), "INCOME"));
             holder.tvAmount.setTextColor(ContextCompat.getColor(context, R.color.income_green));
             holder.layoutIcon.setBackgroundResource(R.drawable.bg_badge_income);
+            holder.ivCategoryIcon.setColorFilter(ContextCompat.getColor(context, R.color.income_green));
         } else {
             holder.tvAmount.setText(CurrencyUtils.formatVndWithSign(item.getAmount(), "EXPENSE"));
             holder.tvAmount.setTextColor(ContextCompat.getColor(context, R.color.expense_red));
             holder.layoutIcon.setBackgroundResource(R.drawable.bg_badge_expense);
+            holder.ivCategoryIcon.setColorFilter(ContextCompat.getColor(context, R.color.expense_red));
         }
 
         int iconRes = CategoryUtils.getCategoryIconRes(context, item.getCategoryName());

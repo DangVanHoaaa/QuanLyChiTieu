@@ -10,14 +10,16 @@ import androidx.sqlite.db.SupportSQLiteDatabase;
 
 import com.example.quanlychitieu.model.Budget;
 import com.example.quanlychitieu.model.Category;
+import com.example.quanlychitieu.model.PendingTransaction;
 import com.example.quanlychitieu.model.SavingsGoal;
 import com.example.quanlychitieu.model.Transaction;
+import androidx.room.migration.Migration;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executors;
 
-@Database(entities = {Transaction.class, Category.class, Budget.class, SavingsGoal.class}, version = 1, exportSchema = false)
+@Database(entities = {Transaction.class, Category.class, Budget.class, SavingsGoal.class, PendingTransaction.class}, version = 2, exportSchema = false)
 public abstract class AppDatabase extends RoomDatabase {
 
     private static final String DATABASE_NAME = "quan_ly_chi_tieu_db";
@@ -27,6 +29,24 @@ public abstract class AppDatabase extends RoomDatabase {
     public abstract CategoryDao categoryDao();
     public abstract BudgetDao budgetDao();
     public abstract SavingsGoalDao savingsGoalDao();
+    public abstract PendingTransactionDao pendingTransactionDao();
+
+    static final Migration MIGRATION_1_2 = new Migration(1, 2) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase database) {
+            database.execSQL("CREATE TABLE IF NOT EXISTS `pending_transactions` (" +
+                    "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                    "`bankName` TEXT, " +
+                    "`type` TEXT, " +
+                    "`amount` REAL NOT NULL, " +
+                    "`suggestedCategory` TEXT, " +
+                    "`rawContent` TEXT, " +
+                    "`note` TEXT, " +
+                    "`date` TEXT, " +
+                    "`timestamp` INTEGER NOT NULL, " +
+                    "`status` TEXT)");
+        }
+    };
 
     public static AppDatabase getInstance(Context context) {
         if (INSTANCE == null) {
@@ -37,6 +57,8 @@ public abstract class AppDatabase extends RoomDatabase {
                             AppDatabase.class,
                             DATABASE_NAME
                     )
+                    .addMigrations(MIGRATION_1_2)
+                    .fallbackToDestructiveMigration()
                     .addCallback(new Callback() {
                         @Override
                         public void onCreate(@NonNull SupportSQLiteDatabase db) {

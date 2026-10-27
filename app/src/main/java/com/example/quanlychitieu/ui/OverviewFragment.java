@@ -51,6 +51,9 @@ public class OverviewFragment extends Fragment implements TransactionAdapter.OnT
     private ExtendedFloatingActionButton fabAdd;
     private TextView btnViewAll;
 
+    private View cardPendingApproval;
+    private TextView tvPendingTitle;
+
     private double totalIncomeAllTime = 0.0;
     private double totalExpenseAllTime = 0.0;
     private double currentMonthSpent = 0.0;
@@ -78,10 +81,24 @@ public class OverviewFragment extends Fragment implements TransactionAdapter.OnT
         layoutEmpty = view.findViewById(R.id.layout_empty_recent);
         fabAdd = view.findViewById(R.id.fab_add_transaction);
         btnViewAll = view.findViewById(R.id.btn_view_all_transactions);
+
+        cardPendingApproval = view.findViewById(R.id.card_pending_approval);
+        tvPendingTitle = view.findViewById(R.id.tv_pending_title);
+        if (cardPendingApproval != null) {
+            cardPendingApproval.setOnClickListener(v -> {
+                startActivity(new android.content.Intent(requireContext(), PendingApprovalActivity.class));
+            });
+        }
         View btnOpenAi = view.findViewById(R.id.btn_open_ai_chatbot);
         if (btnOpenAi != null) {
             btnOpenAi.setOnClickListener(v -> {
                 startActivity(new android.content.Intent(requireContext(), ChatBotActivity.class));
+            });
+        }
+        View btnBankSync = view.findViewById(R.id.btn_bank_sync);
+        if (btnBankSync != null) {
+            btnBankSync.setOnClickListener(v -> {
+                startActivity(new android.content.Intent(requireContext(), PendingApprovalActivity.class));
             });
         }
         View btnTheme = view.findViewById(R.id.btn_change_theme);
@@ -164,6 +181,48 @@ public class OverviewFragment extends Fragment implements TransactionAdapter.OnT
                 adapter.setTransactions(list);
             }
         });
+
+        // 5. Quan sát số giao dịch ngân hàng đang chờ duyệt
+        com.example.quanlychitieu.database.AppDatabase.getInstance(requireContext())
+                .pendingTransactionDao().getPendingCount()
+                .observe(getViewLifecycleOwner(), count -> {
+                    int c = count != null ? count : 0;
+                    if (cardPendingApproval != null) {
+                        if (c > 0) {
+                            cardPendingApproval.setVisibility(View.VISIBLE);
+                            if (tvPendingTitle != null) {
+                                tvPendingTitle.setText(c + " giao dịch ngân hàng chờ duyệt");
+                            }
+                        } else {
+                            cardPendingApproval.setVisibility(View.GONE);
+                        }
+                    }
+                });
+    }
+
+    private void openFirstPendingTransaction() {
+        java.util.concurrent.Executors.newSingleThreadExecutor().execute(() -> {
+            com.example.quanlychitieu.database.AppDatabase db = com.example.quanlychitieu.database.AppDatabase.getInstance(requireContext());
+            java.util.List<com.example.quanlychitieu.model.PendingTransaction> list = db.pendingTransactionDao().getPendingTransactionsSync();
+            if (list != null && !list.isEmpty()) {
+                com.example.quanlychitieu.model.PendingTransaction first = list.get(0);
+                if (getActivity() != null) {
+                    getActivity().runOnUiThread(() -> {
+                        com.example.quanlychitieu.ui.dialog.PendingTransactionDialogHelper.showApproveDialog(
+                                requireContext(), first, () -> {
+                                    // Sau khi duyệt hoặc bỏ qua, nếu còn giao dịch khác thì có thể mở tiếp
+                                }
+                        );
+                    });
+                }
+            } else {
+                if (getActivity() != null) {
+                    getActivity().runOnUiThread(() -> {
+                        Toast.makeText(requireContext(), "Hiện không có giao dịch nào đang chờ duyệt", Toast.LENGTH_SHORT).show();
+                    });
+                }
+            }
+        });
     }
 
     private void updateBalance() {
@@ -219,9 +278,22 @@ public class OverviewFragment extends Fragment implements TransactionAdapter.OnT
 
     @Override
     public void onDelete(Transaction transaction) {
+        boolean isIncome = "INCOME".equalsIgnoreCase(transaction.getType());
+        String amountFormatted = CurrencyUtils.formatVnd(transaction.getAmount());
+        String message;
+        if (isIncome) {
+            message = "Bạn đang chọn xóa khoản Thu nhập: + " + amountFormatted + " (" + transaction.getCategoryName() + ")\n\n"
+                    + "⚠️ Lưu ý: Vì đây là khoản thu vào ví, khi xóa thì Tổng số dư hiện tại sẽ bị TRỪ ĐI " + amountFormatted + ".\n\n"
+                    + "Bạn có chắc chắn muốn xóa không?";
+        } else {
+            message = "Bạn đang chọn xóa khoản Chi tiêu: - " + amountFormatted + " (" + transaction.getCategoryName() + ")\n\n"
+                    + "💡 Khoản chi này sẽ bị hủy bỏ, tiền sẽ được hoàn lại giúp Tổng số dư hiện tại TĂNG THÊM " + amountFormatted + ".\n\n"
+                    + "Bạn có chắc chắn muốn xóa không?";
+        }
+
         new AlertDialog.Builder(requireContext())
                 .setTitle(R.string.confirm_delete_title)
-                .setMessage(R.string.confirm_delete_msg)
+                .setMessage(message)
                 .setPositiveButton(R.string.btn_delete, (dialog, which) -> {
                     repository.deleteTransaction(transaction, res -> {
                         if (getActivity() != null) {

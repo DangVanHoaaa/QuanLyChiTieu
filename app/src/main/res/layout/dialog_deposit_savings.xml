@@ -25,6 +25,14 @@
         android:textColor="@color/text_secondary"
         android:textSize="14sp" />
 
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="💡 Số tiền nạp sẽ được trừ vào Tổng số dư hiện tại của bạn"
+        android:textColor="@color/income_green"
+        android:textSize="12sp" />
+
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/til_deposit_amount"
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
