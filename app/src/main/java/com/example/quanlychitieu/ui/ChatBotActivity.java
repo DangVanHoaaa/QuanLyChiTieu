@@ -100,7 +100,7 @@ public class ChatBotActivity extends AppCompatActivity implements ChatAdapter.On
     }
 
     private void sendWelcomeMessage() {
-        String welcome = "Xin chào! Tôi là Trợ lý Tài chính AI của Ví Thông Minh 🤖\n\n"
+        String welcome = "Xin chào! Tôi là Trợ lý Tài chính của Ví Thông Minh 🤖\n\n"
                 + "Tôi có thể giúp bạn:\n"
                 + "• 📊 Xem tổng kết thu chi và ngân sách tháng này\n"
                 + "• 🏆 Tìm danh mục chi tiêu tốn kém nhất\n"

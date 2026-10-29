@@ -4,6 +4,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
+import com.example.quanlychitieu.service.BankNotificationParser;
 import com.example.quanlychitieu.utils.CurrencyUtils;
 import com.example.quanlychitieu.utils.DateUtils;
 
@@ -93,5 +94,155 @@ public class AppLogicUnitTest {
         assertTrue(m2.find());
         assertEquals("1.5", m2.group(1));
         assertEquals("triệu", m2.group(2));
+    }
+
+    @Test
+    public void testBidvAppNotificationExpense() {
+        String pkg = "com.vnpay.bidv";
+        String title = "Biến động số dư";
+        String body = "TK 1234567890: -250,000 VND vao 12:30 28/10/2026. Ref: 123456. So du cuoi: 15,250,000 VND. ND: An trua com ga";
+
+        assertTrue(BankNotificationParser.isBankingNotification(pkg, title, body));
+
+        BankNotificationParser.ParsedBankTransaction parsed = BankNotificationParser.parse(pkg, title, body);
+        assertNotNull(parsed);
+        assertEquals("BIDV", parsed.bankName);
+        assertEquals("EXPENSE", parsed.type);
+        assertEquals(250000.0, parsed.amount, 0.001);
+        assertEquals("Ăn uống", parsed.categoryName);
+        assertTrue(parsed.note.contains("An trua com ga"));
+        assertFalse(parsed.note.contains("15,250,000"));
+    }
+
+    @Test
+    public void testBidvAppNotificationIncome() {
+        String pkg = "vn.com.bidv.smartbanking";
+        String title = "BIDV SmartBanking";
+        String body = "BIDV: TK 1234567890 +15,000,000VND luc 09:00 28/10/2026. So du kha dung: 25,000,000VND. ND: Cong ty ABC tra luong T10";
+
+        assertTrue(BankNotificationParser.isBankingNotification(pkg, title, body));
+
+        BankNotificationParser.ParsedBankTransaction parsed = BankNotificationParser.parse(pkg, title, body);
+        assertNotNull(parsed);
+        assertEquals("BIDV", parsed.bankName);
+        assertEquals("INCOME", parsed.type);
+        assertEquals(15000000.0, parsed.amount, 0.001);
+        assertEquals("Lương", parsed.categoryName);
+        assertTrue(parsed.note.contains("luong"));
+    }
+
+    @Test
+    public void testBidvSmsGhiNo() {
+        // SMS từ tổng đài BIDV
+        String pkg = "com.google.android.apps.messaging";
+        String title = "BIDV";
+        String body = "BIDV: TK 1234567890, Ghi no: 350,000 VND vao 14:00 28/10/2026. So du cuoi: 2,500,000 VND. Dien giai: Mua giay the thao Shopee";
+
+        assertTrue(BankNotificationParser.isBankingNotification(pkg, title, body));
+
+        BankNotificationParser.ParsedBankTransaction parsed = BankNotificationParser.parse(pkg, title, body);
+        assertNotNull(parsed);
+        assertEquals("BIDV", parsed.bankName);
+        assertEquals("EXPENSE", parsed.type);
+        assertEquals(350000.0, parsed.amount, 0.001);
+        assertEquals("Mua sắm", parsed.categoryName);
+        assertTrue(parsed.note.contains("Shopee"));
+    }
+
+    @Test
+    public void testBidvSmsGhiCo() {
+        String pkg = "com.android.mms";
+        String title = "BIDV";
+        String body = "BIDV: TK 1234567890, Ghi co: 500,000 VND. So du cuoi: 3,000,000 VND. ND: Ban tang tien sinh nhat";
+
+        assertTrue(BankNotificationParser.isBankingNotification(pkg, title, body));
+
+        BankNotificationParser.ParsedBankTransaction parsed = BankNotificationParser.parse(pkg, title, body);
+        assertNotNull(parsed);
+        assertEquals("BIDV", parsed.bankName);
+        assertEquals("INCOME", parsed.type);
+        assertEquals(500000.0, parsed.amount, 0.001);
+        assertEquals("Tiền được cho", parsed.categoryName);
+    }
+
+    @Test
+    public void testBidvPhatSinhPattern() {
+        String pkg = null;
+        String title = "BIDV";
+        String body = "TK 123456 tai BIDV: PS: -120.000VND. SD: 1.200.000VND. Mo ta: Do xang xe may";
+
+        assertTrue(BankNotificationParser.isBankingNotification(pkg, title, body));
+
+        BankNotificationParser.ParsedBankTransaction parsed = BankNotificationParser.parse(pkg, title, body);
+        assertNotNull(parsed);
+        assertEquals("BIDV", parsed.bankName);
+        assertEquals("EXPENSE", parsed.type);
+        assertEquals(120000.0, parsed.amount, 0.001);
+        assertEquals("Đi lại", parsed.categoryName);
+        assertTrue(parsed.note.contains("Do xang"));
+    }
+
+    @Test
+    public void testMbBankNotification() {
+        String pkg = "com.mbmobile";
+        String title = "MB Bank";
+        String body = "TK 0123456789 -150,000VND tai Highlands Coffee. SD: 5,000,000VND";
+
+        assertTrue(BankNotificationParser.isBankingNotification(pkg, title, body));
+
+        BankNotificationParser.ParsedBankTransaction parsed = BankNotificationParser.parse(pkg, title, body);
+        assertNotNull(parsed);
+        assertEquals("MB Bank", parsed.bankName);
+        assertEquals("EXPENSE", parsed.type);
+        assertEquals(150000.0, parsed.amount, 0.001);
+        assertEquals("Ăn uống", parsed.categoryName);
+    }
+
+    @Test
+    public void testBidvThanhToanHoaDonEvn() {
+        String pkg = "com.bidv.smartbanking";
+        String title = "BIDV";
+        String body = "BIDV: TK 123456, Thanh toan hoa don EVN 450.000 VND. So du kha dung: 2.100.000 VND";
+
+        assertTrue(BankNotificationParser.isBankingNotification(pkg, title, body));
+
+        BankNotificationParser.ParsedBankTransaction parsed = BankNotificationParser.parse(pkg, title, body);
+        assertNotNull(parsed);
+        assertEquals("BIDV", parsed.bankName);
+        assertEquals("EXPENSE", parsed.type);
+        assertEquals(450000.0, parsed.amount, 0.001);
+        assertEquals("Hóa đơn", parsed.categoryName);
+    }
+
+    @Test
+    public void testBidvSoTienGdAnSang() {
+        String pkg = "vn.bidv.smartbanking";
+        String title = "Biến động số dư BIDV";
+        String body = "BIDV: TK 12345678. So tien GD: -80.000 VND. So du cuoi: 420.000 VND. ND: An sang banh mi";
+
+        assertTrue(BankNotificationParser.isBankingNotification(pkg, title, body));
+
+        BankNotificationParser.ParsedBankTransaction parsed = BankNotificationParser.parse(pkg, title, body);
+        assertNotNull(parsed);
+        assertEquals("BIDV", parsed.bankName);
+        assertEquals("EXPENSE", parsed.type);
+        assertEquals(80000.0, parsed.amount, 0.001);
+        assertEquals("Ăn uống", parsed.categoryName);
+        assertTrue(parsed.note.contains("An sang banh mi"));
+    }
+
+    @Test
+    public void testBidvNhanTienVaoTk() {
+        String pkg = "com.vnpay.bidv";
+        String title = "BIDV";
+        String body = "BIDV: TK 12345678. Nhan 2.000.000 VND tu Nguyen Van B. So du: 5.000.000 VND. ND: Tra tien vay";
+
+        assertTrue(BankNotificationParser.isBankingNotification(pkg, title, body));
+
+        BankNotificationParser.ParsedBankTransaction parsed = BankNotificationParser.parse(pkg, title, body);
+        assertNotNull(parsed);
+        assertEquals("BIDV", parsed.bankName);
+        assertEquals("INCOME", parsed.type);
+        assertEquals(2000000.0, parsed.amount, 0.001);
     }
 }

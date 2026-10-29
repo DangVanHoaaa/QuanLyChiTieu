@@ -149,6 +149,8 @@ public class BankSyncDialogHelper {
 
         // Cấu hình các mẫu giao dịch thử nghiệm
         List<String> sampleLabels = new ArrayList<>();
+        sampleLabels.add("BIDV: -180.000 VNĐ (Ăn trưa cơm niêu)");
+        sampleLabels.add("BIDV: +12.000.000 VNĐ (Lương công ty)");
         sampleLabels.add("MB Bank: -150.000 VNĐ (Ăn trưa Highlands Coffee)");
         sampleLabels.add("Vietcombank: +8.500.000 VNĐ (Lương tháng 10)");
         sampleLabels.add("Techcombank: -250.000 VNĐ (Mua sách Tiki)");
@@ -166,30 +168,40 @@ public class BankSyncDialogHelper {
                 switch (pos) {
                     case 0:
                         pending = BankNotificationListenerService.processAndRecordBankTransaction(
-                                context, "MB Bank", "EXPENSE", 150000.0, "Ăn uống", "Ăn trưa Highlands Coffee"
+                                context, "BIDV", "EXPENSE", 180000.0, "Ăn uống", "Ăn trưa cơm niêu"
                         );
                         break;
                     case 1:
                         pending = BankNotificationListenerService.processAndRecordBankTransaction(
-                                context, "Vietcombank", "INCOME", 8500000.0, "Lương", "Lương tháng 10"
+                                context, "BIDV", "INCOME", 12000000.0, "Lương", "Lương công ty"
                         );
                         break;
                     case 2:
                         pending = BankNotificationListenerService.processAndRecordBankTransaction(
-                                context, "Techcombank", "EXPENSE", 250000.0, "Mua sắm", "Mua sách Tiki"
+                                context, "MB Bank", "EXPENSE", 150000.0, "Ăn uống", "Ăn trưa Highlands Coffee"
                         );
                         break;
                     case 3:
                         pending = BankNotificationListenerService.processAndRecordBankTransaction(
-                                context, "Ví MoMo", "EXPENSE", 45000.0, "Ăn uống", "The Coffee House"
+                                context, "Vietcombank", "INCOME", 8500000.0, "Lương", "Lương tháng 10"
                         );
                         break;
                     case 4:
                         pending = BankNotificationListenerService.processAndRecordBankTransaction(
-                                context, "TPBank", "EXPENSE", 120000.0, "Đi lại", "Đổ xăng xe máy"
+                                context, "Techcombank", "EXPENSE", 250000.0, "Mua sắm", "Mua sách Tiki"
                         );
                         break;
                     case 5:
+                        pending = BankNotificationListenerService.processAndRecordBankTransaction(
+                                context, "Ví MoMo", "EXPENSE", 45000.0, "Ăn uống", "The Coffee House"
+                        );
+                        break;
+                    case 6:
+                        pending = BankNotificationListenerService.processAndRecordBankTransaction(
+                                context, "TPBank", "EXPENSE", 120000.0, "Đi lại", "Đổ xăng xe máy"
+                        );
+                        break;
+                    case 7:
                     default:
                         pending = BankNotificationListenerService.processAndRecordBankTransaction(
                                 context, "Ví ZaloPay", "EXPENSE", 35000.0, "Mua sắm", "Circle K"

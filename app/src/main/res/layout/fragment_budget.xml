@@ -16,7 +16,7 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- Tiêu đề màn hình & Tháng -->
+            <!-- Tiêu đề màn hình & Nút xem Lịch sử -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -32,14 +32,97 @@
                     android:textSize="22sp"
                     android:textStyle="bold" />
 
-                <TextView
-                    android:id="@+id/tv_budget_month"
+                <!-- Nút mở Lịch sử quản lý ngân sách -->
+                <LinearLayout
+                    android:id="@+id/btn_budget_history"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Tháng 10/2026"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="14sp"
-                    android:textStyle="bold" />
+                    android:layout_height="36dp"
+                    android:background="@drawable/bg_badge_income"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="10dp">
+
+                    <ImageView
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:src="@drawable/ic_history"
+                        app:tint="?attr/colorPrimary" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="4dp"
+                        android:text="Lịch sử"
+                        android:textColor="?attr/colorPrimary"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Thanh điều hướng chọn Tháng ngân sách (Tháng trước & sau) -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageButton
+                    android:id="@+id/btn_prev_budget_month"
+                    android:layout_width="38dp"
+                    android:layout_height="38dp"
+                    android:background="@drawable/bg_badge_income"
+                    android:src="@drawable/ic_chevron_left"
+                    app:tint="?attr/colorPrimary"
+                    android:contentDescription="Tháng trước" />
+
+                <LinearLayout
+                    android:id="@+id/layout_select_budget_month"
+                    android:layout_width="0dp"
+                    android:layout_height="38dp"
+                    android:layout_weight="1"
+                    android:layout_marginHorizontal="8dp"
+                    android:background="@drawable/bg_badge_income"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="12dp">
+
+                    <ImageView
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:src="@drawable/ic_calendar"
+                        app:tint="?attr/colorPrimary" />
+
+                    <TextView
+                        android:id="@+id/tv_budget_month"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:text="Tháng 10/2026"
+                        android:textColor="?attr/colorPrimary"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+
+                    <ImageView
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:layout_marginStart="4dp"
+                        android:src="@drawable/ic_expand_more"
+                        app:tint="?attr/colorPrimary" />
+                </LinearLayout>
+
+                <ImageButton
+                    android:id="@+id/btn_next_budget_month"
+                    android:layout_width="38dp"
+                    android:layout_height="38dp"
+                    android:background="@drawable/bg_badge_income"
+                    android:src="@drawable/ic_chevron_right"
+                    app:tint="?attr/colorPrimary"
+                    android:contentDescription="Tháng sau" />
             </LinearLayout>
 
             <!-- Card Ngân Sách Tổng Tháng -->

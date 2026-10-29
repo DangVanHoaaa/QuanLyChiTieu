@@ -34,4 +34,13 @@ public interface CategoryDao {
 
     @Query("SELECT COUNT(*) FROM categories")
     int getCategoryCount();
+
+    @Query("SELECT * FROM categories WHERE type = :type AND LOWER(TRIM(name)) = LOWER(TRIM(:name)) LIMIT 1")
+    Category getCategoryByNameAndTypeSync(String name, String type);
+
+    @androidx.room.Delete
+    void deleteSync(Category category);
+
+    @Query("DELETE FROM categories WHERE id = :id")
+    void deleteById(int id);
 }

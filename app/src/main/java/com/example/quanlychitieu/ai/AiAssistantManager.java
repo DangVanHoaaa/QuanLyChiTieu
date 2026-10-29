@@ -315,14 +315,14 @@ public class AiAssistantManager {
         if (norm.equals("chao") || norm.equals("hi") || norm.startsWith("hi ") || norm.contains("hello")
                 || norm.contains("alo") || norm.contains("ban oi") || norm.contains("buoi sang") || norm.contains("buoi toi")
                 || norm.startsWith("chao ban") || norm.startsWith("xin chao")) {
-            return "Chào bạn! Tôi là Trợ lý Tài chính AI của Ví Thông Minh 🤖. Rất vui được gặp bạn!\n\n"
+            return "Chào bạn! Tôi là Trợ lý Tài chính của Ví Thông Minh 🤖. Rất vui được gặp bạn!\n\n"
                     + "Hôm nay tình hình chi tiêu của bạn thế nào rồi? Bạn cần tôi phân tích số liệu, gợi ý cách tiết kiệm hay muốn tâm sự về kế hoạch tài chính nào cứ thoải mái chia sẻ nhé!";
         }
 
         // 2. Giới thiệu bản thân & Năng lực
         if (norm.contains("ban la ai") || norm.contains("ban ten gi") || norm.contains("ai tao ra")
                 || norm.contains("lam duoc gi") || norm.contains("gioi thieu") || norm.contains("chuc nang cua ban")) {
-            return "Tôi là Trợ lý Tài chính Cá nhân AI đồng hành cùng bạn trong ứng dụng Ví Thông Minh ✨\n\n"
+            return "Tôi là Trợ lý Tài chính Cá nhân đồng hành cùng bạn trong ứng dụng Ví Thông Minh ✨\n\n"
                     + "Tôi có thể giúp bạn:\n"
                     + "- Trò chuyện mở rộng, tư vấn tài chính, đầu tư, mua sắm và giải đáp thắc mắc tiền bạc.\n"
                     + "- Ghi chép thu chi tự động qua lời nhắn (ví dụ: 'Ăn trưa 45k', 'Vừa nhận lương 10 triệu').\n"

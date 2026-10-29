@@ -78,26 +78,28 @@ public abstract class AppDatabase extends RoomDatabase {
 
     private static void initDefaultCategories(AppDatabase database) {
         CategoryDao dao = database.categoryDao();
-        if (dao.getCategoryCount() == 0) {
-            List<Category> list = new ArrayList<>();
-            // Danh mục thu nhập mặc định
-            list.add(new Category("Lương", "INCOME", "ic_cat_salary", "#16A34A"));
-            list.add(new Category("Thưởng", "INCOME", "ic_cat_bonus", "#22C55E"));
-            list.add(new Category("Tiền được cho", "INCOME", "ic_cat_gift", "#10B981"));
-            list.add(new Category("Thu nhập khác", "INCOME", "ic_cat_income_other", "#059669"));
+        List<Category> list = new ArrayList<>();
+        // Danh mục thu nhập mặc định
+        list.add(new Category("Lương", "INCOME", "ic_cat_salary", "#16A34A"));
+        list.add(new Category("Thưởng", "INCOME", "ic_cat_bonus", "#22C55E"));
+        list.add(new Category("Tiền được cho", "INCOME", "ic_cat_gift", "#10B981"));
+        list.add(new Category("Thu nhập khác", "INCOME", "ic_cat_income_other", "#059669"));
 
-            // Danh mục chi tiêu mặc định
-            list.add(new Category("Ăn uống", "EXPENSE", "ic_cat_food", "#EF4444"));
-            list.add(new Category("Đi lại", "EXPENSE", "ic_cat_transport", "#F97316"));
-            list.add(new Category("Học tập", "EXPENSE", "ic_cat_education", "#3B82F6"));
-            list.add(new Category("Mua sắm", "EXPENSE", "ic_cat_shopping", "#EC4899"));
-            list.add(new Category("Hóa đơn", "EXPENSE", "ic_cat_bill", "#8B5CF6"));
-            list.add(new Category("Giải trí", "EXPENSE", "ic_cat_entertainment", "#06B6D4"));
-            list.add(new Category("Sức khỏe", "EXPENSE", "ic_cat_health", "#14B8A6"));
-            list.add(new Category("Nhà ở", "EXPENSE", "ic_cat_home", "#6366F1"));
-            list.add(new Category("Chi tiêu khác", "EXPENSE", "ic_cat_expense_other", "#64748B"));
+        // Danh mục chi tiêu mặc định
+        list.add(new Category("Ăn uống", "EXPENSE", "ic_cat_food", "#EF4444"));
+        list.add(new Category("Đi lại", "EXPENSE", "ic_cat_transport", "#F97316"));
+        list.add(new Category("Học tập", "EXPENSE", "ic_cat_education", "#3B82F6"));
+        list.add(new Category("Mua sắm", "EXPENSE", "ic_cat_shopping", "#EC4899"));
+        list.add(new Category("Hóa đơn", "EXPENSE", "ic_cat_bill", "#8B5CF6"));
+        list.add(new Category("Giải trí", "EXPENSE", "ic_cat_entertainment", "#06B6D4"));
+        list.add(new Category("Sức khỏe", "EXPENSE", "ic_cat_health", "#14B8A6"));
+        list.add(new Category("Nhà ở", "EXPENSE", "ic_cat_home", "#6366F1"));
+        list.add(new Category("Chi tiêu khác", "EXPENSE", "ic_cat_expense_other", "#64748B"));
 
-            dao.insertAll(list);
+        for (Category c : list) {
+            if (dao.getCategoryByNameAndTypeSync(c.getName(), c.getType()) == null) {
+                dao.insert(c);
+            }
         }
     }
 }

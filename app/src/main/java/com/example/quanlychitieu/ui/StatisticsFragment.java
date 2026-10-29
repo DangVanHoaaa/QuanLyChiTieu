@@ -1,10 +1,13 @@
 package com.example.quanlychitieu.ui;
 
+import android.app.AlertDialog;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.GridLayout;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -43,6 +46,7 @@ import com.google.android.material.chip.Chip;
 import com.example.quanlychitieu.utils.ExportReportUtils;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -55,6 +59,10 @@ public class StatisticsFragment extends Fragment {
 
     private Chip chipWeek, chipMonth, chipYear;
     private TextView tvTimeRangeLabel;
+    private ImageButton btnPrevStatTime, btnNextStatTime;
+    private View layoutSelectStatTime;
+    private LinearLayout layoutStatComparison;
+    private TextView tvStatComparisonText;
     private TextView tvTotalIncome, tvTotalExpense;
     private LinearLayout layoutNoData, layoutCharts;
 
@@ -66,6 +74,7 @@ public class StatisticsFragment extends Fragment {
 
     private List<Transaction> currentTransactions = new ArrayList<>();
     private int selectedTimeMode = 1; // 0: Week, 1: Month, 2: Year
+    private Calendar selectedCalendar = Calendar.getInstance();
     private LiveData<List<Transaction>> currentStatLiveData;
 
     @Nullable
@@ -79,6 +88,12 @@ public class StatisticsFragment extends Fragment {
         chipMonth = view.findViewById(R.id.chip_month);
         chipYear = view.findViewById(R.id.chip_year);
         tvTimeRangeLabel = view.findViewById(R.id.tv_time_range_label);
+        btnPrevStatTime = view.findViewById(R.id.btn_prev_stat_time);
+        btnNextStatTime = view.findViewById(R.id.btn_next_stat_time);
+        layoutSelectStatTime = view.findViewById(R.id.layout_select_stat_time);
+        layoutStatComparison = view.findViewById(R.id.layout_stat_comparison);
+        tvStatComparisonText = view.findViewById(R.id.tv_stat_comparison_text);
+
         tvTotalIncome = view.findViewById(R.id.tv_stat_total_income);
         tvTotalExpense = view.findViewById(R.id.tv_stat_total_expense);
         layoutNoData = view.findViewById(R.id.layout_no_stat_data);
@@ -192,6 +207,186 @@ public class StatisticsFragment extends Fragment {
             selectedTimeMode = 2;
             loadStatisticsData();
         });
+
+        if (btnPrevStatTime != null) {
+            btnPrevStatTime.setOnClickListener(v -> {
+                if (selectedTimeMode == 0) {
+                    selectedCalendar.add(Calendar.WEEK_OF_YEAR, -1);
+                } else if (selectedTimeMode == 1) {
+                    selectedCalendar.add(Calendar.MONTH, -1);
+                } else {
+                    selectedCalendar.add(Calendar.YEAR, -1);
+                }
+                loadStatisticsData();
+            });
+        }
+
+        if (btnNextStatTime != null) {
+            btnNextStatTime.setOnClickListener(v -> {
+                if (selectedTimeMode == 0) {
+                    selectedCalendar.add(Calendar.WEEK_OF_YEAR, 1);
+                } else if (selectedTimeMode == 1) {
+                    selectedCalendar.add(Calendar.MONTH, 1);
+                } else {
+                    selectedCalendar.add(Calendar.YEAR, 1);
+                }
+                loadStatisticsData();
+            });
+        }
+
+        if (layoutSelectStatTime != null) {
+            layoutSelectStatTime.setOnClickListener(v -> {
+                if (selectedTimeMode == 1) {
+                    showSelectMonthDialog();
+                } else if (selectedTimeMode == 2) {
+                    showSelectYearDialog();
+                } else {
+                    showSelectWeekDialog();
+                }
+            });
+        }
+    }
+
+    private void showSelectMonthDialog() {
+        if (!isAdded() || getContext() == null) return;
+
+        Calendar tempCal = (Calendar) selectedCalendar.clone();
+        int currentYear = tempCal.get(Calendar.YEAR);
+
+        String[] monthNames = new String[]{
+                "Thg 1", "Thg 2", "Thg 3", "Thg 4",
+                "Thg 5", "Thg 6", "Thg 7", "Thg 8",
+                "Thg 9", "Thg 10", "Thg 11", "Thg 12"
+        };
+
+        View dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_month_picker, null);
+        AlertDialog dialog = new AlertDialog.Builder(requireContext())
+                .setView(dialogView)
+                .setCancelable(true)
+                .create();
+
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
+
+        TextView tvYear = dialogView.findViewById(R.id.tv_picker_year);
+        View btnPrevYear = dialogView.findViewById(R.id.btn_picker_prev_year);
+        View btnNextYear = dialogView.findViewById(R.id.btn_picker_next_year);
+        GridLayout gridMonths = dialogView.findViewById(R.id.grid_months);
+        View btnCurrentMonth = dialogView.findViewById(R.id.btn_quick_current_month);
+        View btnPrevMonth = dialogView.findViewById(R.id.btn_quick_prev_month);
+
+        int[] selectedYear = {currentYear};
+        tvYear.setText(String.valueOf(selectedYear[0]));
+
+        btnPrevYear.setOnClickListener(v -> {
+            selectedYear[0]--;
+            tvYear.setText(String.valueOf(selectedYear[0]));
+        });
+
+        btnNextYear.setOnClickListener(v -> {
+            selectedYear[0]++;
+            tvYear.setText(String.valueOf(selectedYear[0]));
+        });
+
+        if (gridMonths != null) {
+            for (int i = 0; i < gridMonths.getChildCount(); i++) {
+                final int monthIndex = i;
+                View child = gridMonths.getChildAt(i);
+                if (child instanceof TextView) {
+                    ((TextView) child).setText(monthNames[i]);
+                    child.setOnClickListener(v -> {
+                        selectedCalendar.set(Calendar.YEAR, selectedYear[0]);
+                        selectedCalendar.set(Calendar.MONTH, monthIndex);
+                        selectedCalendar.set(Calendar.DAY_OF_MONTH, 1);
+                        dialog.dismiss();
+                        loadStatisticsData();
+                    });
+                }
+            }
+        }
+
+        btnCurrentMonth.setOnClickListener(v -> {
+            selectedCalendar = Calendar.getInstance();
+            dialog.dismiss();
+            loadStatisticsData();
+        });
+
+        btnPrevMonth.setOnClickListener(v -> {
+            selectedCalendar = Calendar.getInstance();
+            selectedCalendar.add(Calendar.MONTH, -1);
+            dialog.dismiss();
+            loadStatisticsData();
+        });
+
+        dialog.show();
+    }
+
+    private void showSelectYearDialog() {
+        if (!isAdded() || getContext() == null) return;
+        int curYear = selectedCalendar.get(Calendar.YEAR);
+        String[] years = new String[]{
+                String.valueOf(curYear - 2),
+                String.valueOf(curYear - 1),
+                String.valueOf(curYear),
+                String.valueOf(curYear + 1)
+        };
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Chọn năm xem thống kê")
+                .setItems(years, (dialog, which) -> {
+                    selectedCalendar.set(Calendar.YEAR, Integer.parseInt(years[which]));
+                    loadStatisticsData();
+                })
+                .show();
+    }
+
+    private void showSelectWeekDialog() {
+        if (!isAdded() || getContext() == null) return;
+        String[] options = new String[]{"Tuần này", "Tuần trước", "2 tuần trước", "3 tuần trước"};
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Chọn tuần xem thống kê")
+                .setItems(options, (dialog, which) -> {
+                    selectedCalendar = Calendar.getInstance();
+                    selectedCalendar.add(Calendar.WEEK_OF_YEAR, -which);
+                    loadStatisticsData();
+                })
+                .show();
+    }
+
+    private void loadMonthComparison() {
+        if (layoutStatComparison == null || tvStatComparisonText == null) return;
+
+        Calendar prevCal = (Calendar) selectedCalendar.clone();
+        prevCal.add(Calendar.MONTH, -1);
+        String prevMonthIso = DateUtils.formatMonthIso(prevCal);
+        String currentMonthIso = DateUtils.formatMonthIso(selectedCalendar);
+
+        repository.getMonthlyExpense(currentMonthIso).observe(getViewLifecycleOwner(), currentSpent -> {
+            double cur = currentSpent != null ? currentSpent : 0.0;
+            repository.getMonthlyExpense(prevMonthIso).observe(getViewLifecycleOwner(), prevSpent -> {
+                if (!isAdded() || layoutStatComparison == null) return;
+                double prev = prevSpent != null ? prevSpent : 0.0;
+
+                layoutStatComparison.setVisibility(View.VISIBLE);
+                String prevMonthDisplay = DateUtils.formatDisplayMonth(prevCal);
+
+                if (prev == 0 && cur == 0) {
+                    tvStatComparisonText.setText("💡 " + DateUtils.formatDisplayMonth(selectedCalendar) + " và " + prevMonthDisplay + " chưa có chi tiêu");
+                } else if (prev == 0) {
+                    tvStatComparisonText.setText("📈 Chi tiêu: " + CurrencyUtils.formatVnd(cur) + " (" + prevMonthDisplay + " không có dữ liệu chi tiêu)");
+                } else {
+                    double diff = cur - prev;
+                    int percent = (int) Math.round((Math.abs(diff) / prev) * 100);
+                    if (diff < 0) {
+                        tvStatComparisonText.setText("📉 Chi tiêu giảm " + CurrencyUtils.formatVnd(Math.abs(diff)) + " (-" + percent + "%) so với " + prevMonthDisplay);
+                    } else if (diff > 0) {
+                        tvStatComparisonText.setText("📈 Chi tiêu tăng " + CurrencyUtils.formatVnd(diff) + " (+" + percent + "%) so với " + prevMonthDisplay);
+                    } else {
+                        tvStatComparisonText.setText("📊 Chi tiêu bằng " + prevMonthDisplay + " (" + CurrencyUtils.formatVnd(cur) + ")");
+                    }
+                }
+            });
+        });
     }
 
     @Override
@@ -226,22 +421,23 @@ public class StatisticsFragment extends Fragment {
 
         String startDate, endDate;
         if (selectedTimeMode == 0) { // Tuần
-            String[] weekRange = DateUtils.getStartAndEndOfWeek();
+            String[] weekRange = DateUtils.getStartAndEndOfWeek(selectedCalendar);
             startDate = weekRange[0];
             endDate = weekRange[1];
-            tvTimeRangeLabel.setText("Tuần này (" + DateUtils.formatDisplayDate(startDate) + " - " + DateUtils.formatDisplayDate(endDate) + ")");
+            tvTimeRangeLabel.setText("Tuần (" + DateUtils.formatDisplayDate(startDate) + " - " + DateUtils.formatDisplayDate(endDate) + ")");
+            if (layoutStatComparison != null) layoutStatComparison.setVisibility(View.GONE);
         } else if (selectedTimeMode == 1) { // Tháng
-            String currentMonth = DateUtils.getCurrentMonth();
-            String[] monthRange = DateUtils.getStartAndEndOfMonth(currentMonth);
+            String[] monthRange = DateUtils.getStartAndEndOfMonth(selectedCalendar);
             startDate = monthRange[0];
             endDate = monthRange[1];
-            tvTimeRangeLabel.setText(DateUtils.formatDisplayMonth(currentMonth));
+            tvTimeRangeLabel.setText(DateUtils.formatDisplayMonth(selectedCalendar));
+            loadMonthComparison();
         } else { // Năm
-            String currentYear = DateUtils.getCurrentYear();
-            String[] yearRange = DateUtils.getStartAndEndOfYear(currentYear);
+            String[] yearRange = DateUtils.getStartAndEndOfYear(selectedCalendar);
             startDate = yearRange[0];
             endDate = yearRange[1];
-            tvTimeRangeLabel.setText("Năm " + currentYear);
+            tvTimeRangeLabel.setText(DateUtils.formatDisplayYear(selectedCalendar));
+            if (layoutStatComparison != null) layoutStatComparison.setVisibility(View.GONE);
         }
 
         // Hủy observer cũ của khoảng thời gian trước đó

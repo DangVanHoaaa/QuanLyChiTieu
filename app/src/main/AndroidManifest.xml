@@ -27,11 +27,11 @@
             </intent-filter>
         </activity>
 
-        <!-- Màn hình Chatbot AI -->
+        <!-- Màn hình Chatbot Trợ lý -->
         <activity
             android:name=".ui.ChatBotActivity"
             android:exported="false"
-            android:label="Trợ lý Tài chính AI"
+            android:label="Trợ lý Tài chính"
             android:theme="@style/Theme.QuanLyChiTieu"
             android:windowSoftInputMode="adjustResize" />
 

@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_rounded_card"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Chọn thời gian xem thống kê"
+        android:textColor="@color/text_primary"
+        android:textSize="17sp"
+        android:textStyle="bold" />
+
+    <!-- Chọn Năm -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <ImageButton
+            android:id="@+id/btn_picker_prev_year"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:background="@drawable/bg_badge_income"
+            android:src="@drawable/ic_chevron_left"
+            app:tint="?attr/colorPrimary"
+            android:contentDescription="Năm trước" />
+
+        <TextView
+            android:id="@+id/tv_picker_year"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="20dp"
+            android:text="2026"
+            android:textColor="?attr/colorPrimary"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <ImageButton
+            android:id="@+id/btn_picker_next_year"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:background="@drawable/bg_badge_income"
+            android:src="@drawable/ic_chevron_right"
+            app:tint="?attr/colorPrimary"
+            android:contentDescription="Năm sau" />
+    </LinearLayout>
+
+    <!-- Grid 12 Tháng -->
+    <GridLayout
+        android:id="@+id/grid_months"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:columnCount="3"
+        android:rowCount="4">
+
+        <TextView
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="0dp"
+            android:layout_height="42dp"
+            android:layout_columnWeight="1"
+            android:layout_margin="3dp"
+            android:background="@drawable/bg_badge_income"
+            android:gravity="center"
+            android:text="Thg 1"
+            android:textColor="@color/text_primary"
+            android:textSize="13sp" />
+
+        <TextView
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="0dp"
+            android:layout_height="42dp"
+            android:layout_columnWeight="1"
+            android:layout_margin="3dp"
+            android:background="@drawable/bg_badge_income"
+            android:gravity="center"
+            android:text="Thg 2"
+            android:textColor="@color/text_primary"
+            android:textSize="13sp" />
+
+        <TextView
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="0dp"
+            android:layout_height="42dp"
+            android:layout_columnWeight="1"
+            android:layout_margin="3dp"
+            android:background="@drawable/bg_badge_income"
+            android:gravity="center"
+            android:text="Thg 3"
+            android:textColor="@color/text_primary"
+            android:textSize="13sp" />
+
+        <TextView
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="0dp"
+            android:layout_height="42dp"
+            android:layout_columnWeight="1"
+            android:layout_margin="3dp"
+            android:background="@drawable/bg_badge_income"
+            android:gravity="center"
+            android:text="Thg 4"
+            android:textColor="@color/text_primary"
+            android:textSize="13sp" />
+
+        <TextView
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="0dp"
+            android:layout_height="42dp"
+            android:layout_columnWeight="1"
+            android:layout_margin="3dp"
+            android:background="@drawable/bg_badge_income"
+            android:gravity="center"
+            android:text="Thg 5"
+            android:textColor="@color/text_primary"
+            android:textSize="13sp" />
+
+        <TextView
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="0dp"
+            android:layout_height="42dp"
+            android:layout_columnWeight="1"
+            android:layout_margin="3dp"
+            android:background="@drawable/bg_badge_income"
+            android:gravity="center"
+            android:text="Thg 6"
+            android:textColor="@color/text_primary"
+            android:textSize="13sp" />
+
+        <TextView
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="0dp"
+            android:layout_height="42dp"
+            android:layout_columnWeight="1"
+            android:layout_margin="3dp"
+            android:background="@drawable/bg_badge_income"
+            android:gravity="center"
+            android:text="Thg 7"
+            android:textColor="@color/text_primary"
+            android:textSize="13sp" />
+
+        <TextView
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="0dp"
+            android:layout_height="42dp"
+            android:layout_columnWeight="1"
+            android:layout_margin="3dp"
+            android:background="@drawable/bg_badge_income"
+            android:gravity="center"
+            android:text="Thg 8"
+            android:textColor="@color/text_primary"
+            android:textSize="13sp" />
+
+        <TextView
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="0dp"
+            android:layout_height="42dp"
+            android:layout_columnWeight="1"
+            android:layout_margin="3dp"
+            android:background="@drawable/bg_badge_income"
+            android:gravity="center"
+            android:text="Thg 9"
+            android:textColor="@color/text_primary"
+            android:textSize="13sp" />
+
+        <TextView
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="0dp"
+            android:layout_height="42dp"
+            android:layout_columnWeight="1"
+            android:layout_margin="3dp"
+            android:background="@drawable/bg_badge_income"
+            android:gravity="center"
+            android:text="Thg 10"
+            android:textColor="@color/text_primary"
+            android:textSize="13sp" />
+
+        <TextView
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="0dp"
+            android:layout_height="42dp"
+            android:layout_columnWeight="1"
+            android:layout_margin="3dp"
+            android:background="@drawable/bg_badge_income"
+            android:gravity="center"
+            android:text="Thg 11"
+            android:textColor="@color/text_primary"
+            android:textSize="13sp" />
+
+        <TextView
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="0dp"
+            android:layout_height="42dp"
+            android:layout_columnWeight="1"
+            android:layout_margin="3dp"
+            android:background="@drawable/bg_badge_income"
+            android:gravity="center"
+            android:text="Thg 12"
+            android:textColor="@color/text_primary"
+            android:textSize="13sp" />
+    </GridLayout>
+
+    <!-- Nút chọn nhanh -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:orientation="horizontal">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_quick_current_month"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="0dp"
+            android:layout_height="38dp"
+            android:layout_marginEnd="4dp"
+            android:layout_weight="1"
+            android:text="Tháng này"
+            android:textSize="12sp"
+            app:strokeColor="?attr/colorPrimary" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_quick_prev_month"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="0dp"
+            android:layout_height="38dp"
+            android:layout_marginStart="4dp"
+            android:layout_weight="1"
+            android:text="Tháng trước"
+            android:textSize="12sp"
+            app:strokeColor="?attr/colorPrimary" />
+    </LinearLayout>
+
+</LinearLayout>

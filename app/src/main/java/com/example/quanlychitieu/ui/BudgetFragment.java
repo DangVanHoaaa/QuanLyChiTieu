@@ -5,6 +5,8 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.GridLayout;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -14,11 +16,13 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.LiveData;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.quanlychitieu.R;
 import com.example.quanlychitieu.adapter.BudgetAdapter;
+import com.example.quanlychitieu.adapter.BudgetHistoryAdapter;
 import com.example.quanlychitieu.model.Budget;
 import com.example.quanlychitieu.repository.ExpenseRepository;
 import com.example.quanlychitieu.ui.dialog.BudgetDialogHelper;
@@ -27,6 +31,7 @@ import com.example.quanlychitieu.utils.DateUtils;
 import com.google.android.material.button.MaterialButton;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 public class BudgetFragment extends Fragment implements BudgetAdapter.OnBudgetActionListener {
@@ -35,6 +40,10 @@ public class BudgetFragment extends Fragment implements BudgetAdapter.OnBudgetAc
     private BudgetAdapter adapter;
 
     private TextView tvMonth;
+    private ImageButton btnPrevBudgetMonth, btnNextBudgetMonth;
+    private View layoutSelectBudgetMonth;
+    private View btnBudgetHistory;
+
     private TextView tvTotalAmount;
     private ProgressBar progressTotal;
     private TextView tvTotalSpent;
@@ -52,9 +61,14 @@ public class BudgetFragment extends Fragment implements BudgetAdapter.OnBudgetAc
     private String searchKeyword = "";
     private int sortMode = 0; // 0: Tiền cao -> thấp, 1: Chi nhiều nhất, 2: Tên A-Z
 
+    private Calendar selectedBudgetCalendar = Calendar.getInstance();
     private String currentMonth;
     private Budget currentTotalBudget;
     private double currentMonthSpent = 0;
+
+    private LiveData<Double> liveMonthlySpent;
+    private LiveData<Budget> liveTotalBudget;
+    private LiveData<List<Budget>> liveCategoryBudgets;
 
     @Nullable
     @Override
@@ -62,9 +76,14 @@ public class BudgetFragment extends Fragment implements BudgetAdapter.OnBudgetAc
         View view = inflater.inflate(R.layout.fragment_budget, container, false);
 
         repository = new ExpenseRepository(requireActivity().getApplication());
-        currentMonth = DateUtils.getCurrentMonth();
+        currentMonth = DateUtils.formatMonthIso(selectedBudgetCalendar);
 
         tvMonth = view.findViewById(R.id.tv_budget_month);
+        btnPrevBudgetMonth = view.findViewById(R.id.btn_prev_budget_month);
+        btnNextBudgetMonth = view.findViewById(R.id.btn_next_budget_month);
+        layoutSelectBudgetMonth = view.findViewById(R.id.layout_select_budget_month);
+        btnBudgetHistory = view.findViewById(R.id.btn_budget_history);
+
         tvTotalAmount = view.findViewById(R.id.tv_total_budget_amount);
         progressTotal = view.findViewById(R.id.progress_total_budget);
         tvTotalSpent = view.findViewById(R.id.tv_total_budget_spent);
@@ -77,8 +96,6 @@ public class BudgetFragment extends Fragment implements BudgetAdapter.OnBudgetAc
         layoutEmptyCategory = view.findViewById(R.id.layout_empty_category_budget);
         etSearchBudget = view.findViewById(R.id.et_search_budget);
         chipSortBudget = view.findViewById(R.id.chip_sort_budget);
-
-        tvMonth.setText(DateUtils.formatDisplayMonth(currentMonth));
 
         setupRecyclerView();
         setupListeners();
@@ -94,6 +111,32 @@ public class BudgetFragment extends Fragment implements BudgetAdapter.OnBudgetAc
     }
 
     private void setupListeners() {
+        if (btnPrevBudgetMonth != null) {
+            btnPrevBudgetMonth.setOnClickListener(v -> {
+                selectedBudgetCalendar.add(Calendar.MONTH, -1);
+                observeBudgetData();
+            });
+        }
+
+        if (btnNextBudgetMonth != null) {
+            btnNextBudgetMonth.setOnClickListener(v -> {
+                selectedBudgetCalendar.add(Calendar.MONTH, 1);
+                observeBudgetData();
+            });
+        }
+
+        if (layoutSelectBudgetMonth != null) {
+            layoutSelectBudgetMonth.setOnClickListener(v -> {
+                showSelectMonthDialog();
+            });
+        }
+
+        if (btnBudgetHistory != null) {
+            btnBudgetHistory.setOnClickListener(v -> {
+                showBudgetHistoryDialog();
+            });
+        }
+
         btnSetTotalBudget.setOnClickListener(v -> {
             BudgetDialogHelper.showSetBudgetDialog(
                     requireContext(),
@@ -101,7 +144,7 @@ public class BudgetFragment extends Fragment implements BudgetAdapter.OnBudgetAc
                     currentMonth,
                     currentTotalBudget,
                     false,
-                    null
+                    () -> observeBudgetData()
             );
         });
 
@@ -112,7 +155,7 @@ public class BudgetFragment extends Fragment implements BudgetAdapter.OnBudgetAc
                     currentMonth,
                     null,
                     true,
-                    null
+                    () -> observeBudgetData()
             );
         });
 
@@ -149,25 +192,65 @@ public class BudgetFragment extends Fragment implements BudgetAdapter.OnBudgetAc
     public void onHiddenChanged(boolean hidden) {
         super.onHiddenChanged(hidden);
         if (!hidden && isAdded()) {
-            filterAndSortCategoryBudgets();
+            observeBudgetData();
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (isAdded()) {
+            observeBudgetData();
+        }
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        removeBudgetDataObservers();
+    }
+
+    private void removeBudgetDataObservers() {
+        if (liveMonthlySpent != null) {
+            try { liveMonthlySpent.removeObservers(getViewLifecycleOwner()); } catch (Exception ignored) {}
+            liveMonthlySpent = null;
+        }
+        if (liveTotalBudget != null) {
+            try { liveTotalBudget.removeObservers(getViewLifecycleOwner()); } catch (Exception ignored) {}
+            liveTotalBudget = null;
+        }
+        if (liveCategoryBudgets != null) {
+            try { liveCategoryBudgets.removeObservers(getViewLifecycleOwner()); } catch (Exception ignored) {}
+            liveCategoryBudgets = null;
         }
     }
 
     private void observeBudgetData() {
+        if (!isAdded()) return;
+        removeBudgetDataObservers();
+
+        currentMonth = DateUtils.formatMonthIso(selectedBudgetCalendar);
+        if (tvMonth != null) {
+            tvMonth.setText(DateUtils.formatDisplayMonth(selectedBudgetCalendar));
+        }
+
         // Chi tiêu tổng của tháng
-        repository.getMonthlyExpense(currentMonth).observe(getViewLifecycleOwner(), spent -> {
+        liveMonthlySpent = repository.getMonthlyExpense(currentMonth);
+        liveMonthlySpent.observe(getViewLifecycleOwner(), spent -> {
             currentMonthSpent = spent != null ? spent : 0.0;
             updateTotalBudgetUi();
         });
 
         // Ngân sách tổng của tháng
-        repository.getTotalBudgetByMonth(currentMonth).observe(getViewLifecycleOwner(), budget -> {
+        liveTotalBudget = repository.getTotalBudgetByMonth(currentMonth);
+        liveTotalBudget.observe(getViewLifecycleOwner(), budget -> {
             currentTotalBudget = budget;
             updateTotalBudgetUi();
         });
 
         // Ngân sách của các danh mục trong tháng
-        repository.getBudgetsByMonth(currentMonth).observe(getViewLifecycleOwner(), budgets -> {
+        liveCategoryBudgets = repository.getBudgetsByMonth(currentMonth);
+        liveCategoryBudgets.observe(getViewLifecycleOwner(), budgets -> {
             List<Budget> categoryBudgets = new ArrayList<>();
             if (budgets != null) {
                 for (Budget b : budgets) {
@@ -186,6 +269,132 @@ public class BudgetFragment extends Fragment implements BudgetAdapter.OnBudgetAc
                 loadCategoryExpenses(categoryBudgets);
             }
         });
+    }
+
+    private void showSelectMonthDialog() {
+        if (!isAdded() || getContext() == null) return;
+
+        Calendar tempCal = (Calendar) selectedBudgetCalendar.clone();
+        int currentYear = tempCal.get(Calendar.YEAR);
+
+        String[] monthNames = new String[]{
+                "Thg 1", "Thg 2", "Thg 3", "Thg 4",
+                "Thg 5", "Thg 6", "Thg 7", "Thg 8",
+                "Thg 9", "Thg 10", "Thg 11", "Thg 12"
+        };
+
+        View dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_month_picker, null);
+        AlertDialog dialog = new AlertDialog.Builder(requireContext())
+                .setView(dialogView)
+                .setCancelable(true)
+                .create();
+
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
+
+        TextView tvYear = dialogView.findViewById(R.id.tv_picker_year);
+        View btnPrevYear = dialogView.findViewById(R.id.btn_picker_prev_year);
+        View btnNextYear = dialogView.findViewById(R.id.btn_picker_next_year);
+        GridLayout gridMonths = dialogView.findViewById(R.id.grid_months);
+        View btnCurrentMonth = dialogView.findViewById(R.id.btn_quick_current_month);
+        View btnPrevMonth = dialogView.findViewById(R.id.btn_quick_prev_month);
+
+        int[] selectedYear = {currentYear};
+        tvYear.setText(String.valueOf(selectedYear[0]));
+
+        btnPrevYear.setOnClickListener(v -> {
+            selectedYear[0]--;
+            tvYear.setText(String.valueOf(selectedYear[0]));
+        });
+
+        btnNextYear.setOnClickListener(v -> {
+            selectedYear[0]++;
+            tvYear.setText(String.valueOf(selectedYear[0]));
+        });
+
+        if (gridMonths != null) {
+            for (int i = 0; i < gridMonths.getChildCount(); i++) {
+                final int monthIndex = i;
+                View child = gridMonths.getChildAt(i);
+                if (child instanceof TextView) {
+                    ((TextView) child).setText(monthNames[i]);
+                    child.setOnClickListener(v -> {
+                        selectedBudgetCalendar.set(Calendar.YEAR, selectedYear[0]);
+                        selectedBudgetCalendar.set(Calendar.MONTH, monthIndex);
+                        selectedBudgetCalendar.set(Calendar.DAY_OF_MONTH, 1);
+                        dialog.dismiss();
+                        observeBudgetData();
+                    });
+                }
+            }
+        }
+
+        btnCurrentMonth.setOnClickListener(v -> {
+            selectedBudgetCalendar = Calendar.getInstance();
+            dialog.dismiss();
+            observeBudgetData();
+        });
+
+        btnPrevMonth.setOnClickListener(v -> {
+            selectedBudgetCalendar = Calendar.getInstance();
+            selectedBudgetCalendar.add(Calendar.MONTH, -1);
+            dialog.dismiss();
+            observeBudgetData();
+        });
+
+        dialog.show();
+    }
+
+    private void showBudgetHistoryDialog() {
+        if (!isAdded() || getContext() == null) return;
+
+        View dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_budget_history, null);
+        AlertDialog dialog = new AlertDialog.Builder(requireContext())
+                .setView(dialogView)
+                .setCancelable(true)
+                .create();
+
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
+
+        RecyclerView rvHistory = dialogView.findViewById(R.id.rv_budget_history);
+        View layoutEmpty = dialogView.findViewById(R.id.layout_empty_budget_history);
+        View btnClose = dialogView.findViewById(R.id.btn_close_budget_history);
+
+        BudgetHistoryAdapter historyAdapter = new BudgetHistoryAdapter(requireContext(), month -> {
+            try {
+                java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM", java.util.Locale.getDefault());
+                java.util.Date d = sdf.parse(month);
+                if (d != null) {
+                    selectedBudgetCalendar.setTime(d);
+                    dialog.dismiss();
+                    observeBudgetData();
+                }
+            } catch (Exception ignored) {}
+        });
+
+        rvHistory.setLayoutManager(new LinearLayoutManager(requireContext()));
+        rvHistory.setAdapter(historyAdapter);
+
+        btnClose.setOnClickListener(v -> dialog.dismiss());
+
+        repository.getBudgetHistory(list -> {
+            if (getActivity() == null) return;
+            getActivity().runOnUiThread(() -> {
+                if (list == null || list.isEmpty()) {
+                    layoutEmpty.setVisibility(View.VISIBLE);
+                    rvHistory.setVisibility(View.GONE);
+                } else {
+                    layoutEmpty.setVisibility(View.GONE);
+                    rvHistory.setVisibility(View.VISIBLE);
+                    historyAdapter.setItems(list);
+                }
+            });
+        });
+
+        dialog.show();
     }
 
     private void updateTotalBudgetUi() {
@@ -284,7 +493,7 @@ public class BudgetFragment extends Fragment implements BudgetAdapter.OnBudgetAc
                 currentMonth,
                 budget,
                 true,
-                null
+                () -> observeBudgetData()
         );
     }
 
@@ -298,6 +507,7 @@ public class BudgetFragment extends Fragment implements BudgetAdapter.OnBudgetAc
                         if (getActivity() != null) {
                             getActivity().runOnUiThread(() -> {
                                 Toast.makeText(requireContext(), R.string.msg_deleted_success, Toast.LENGTH_SHORT).show();
+                                observeBudgetData();
                             });
                         }
                     });

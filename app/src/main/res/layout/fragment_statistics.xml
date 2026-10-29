@@ -86,16 +86,91 @@
                 android:text="@string/tab_year" />
         </com.google.android.material.chip.ChipGroup>
 
-        <!-- Nhãn khoảng thời gian hiển thị -->
-        <TextView
-            android:id="@+id/tv_time_range_label"
-            android:layout_width="wrap_content"
+        <!-- Thanh điều hướng khoảng thời gian (Tuần / Tháng / Năm trước & sau) -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="Tháng 10/2026"
-            android:textColor="@color/text_secondary"
-            android:textSize="14sp"
-            android:textStyle="bold" />
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageButton
+                android:id="@+id/btn_prev_stat_time"
+                android:layout_width="38dp"
+                android:layout_height="38dp"
+                android:background="@drawable/bg_badge_income"
+                android:src="@drawable/ic_chevron_left"
+                app:tint="?attr/colorPrimary"
+                android:contentDescription="Khoảng trước" />
+
+            <LinearLayout
+                android:id="@+id/layout_select_stat_time"
+                android:layout_width="0dp"
+                android:layout_height="38dp"
+                android:layout_weight="1"
+                android:layout_marginHorizontal="8dp"
+                android:background="@drawable/bg_badge_income"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:paddingHorizontal="12dp">
+
+                <ImageView
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:src="@drawable/ic_calendar"
+                    app:tint="?attr/colorPrimary" />
+
+                <TextView
+                    android:id="@+id/tv_time_range_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:text="Tháng 10/2026"
+                    android:textColor="?attr/colorPrimary"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <ImageView
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:layout_marginStart="4dp"
+                    android:src="@drawable/ic_expand_more"
+                    app:tint="?attr/colorPrimary" />
+            </LinearLayout>
+
+            <ImageButton
+                android:id="@+id/btn_next_stat_time"
+                android:layout_width="38dp"
+                android:layout_height="38dp"
+                android:background="@drawable/bg_badge_income"
+                android:src="@drawable/ic_chevron_right"
+                app:tint="?attr/colorPrimary"
+                android:contentDescription="Khoảng sau" />
+        </LinearLayout>
+
+        <!-- Banner so sánh với tháng trước (chỉ hiện ở chế độ Tháng) -->
+        <LinearLayout
+            android:id="@+id/layout_stat_comparison"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/bg_rounded_card"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="12dp"
+            android:paddingVertical="8dp"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/tv_stat_comparison_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="📊 So với tháng trước: Giảm 250.000 VNĐ"
+                android:textColor="@color/text_secondary"
+                android:textSize="12sp" />
+        </LinearLayout>
 
         <!-- Card Tổng Thu & Tổng Chi -->
         <LinearLayout

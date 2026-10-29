@@ -43,6 +43,10 @@ public class BankNotificationParser {
         BANK_PACKAGES.put("com.vpb.mc", "VPBank");
         BANK_PACKAGES.put("mobile.acb.com.vn", "ACB");
         BANK_PACKAGES.put("com.vnpay.bidv", "BIDV");
+        BANK_PACKAGES.put("vn.com.bidv.smartbanking", "BIDV");
+        BANK_PACKAGES.put("com.bidv.smartbanking", "BIDV");
+        BANK_PACKAGES.put("com.bidv", "BIDV");
+        BANK_PACKAGES.put("vn.bidv.smartbanking", "BIDV");
         BANK_PACKAGES.put("com.vnpay.agribank", "Agribank");
         BANK_PACKAGES.put("com.tpb.mb.gprsandroid", "TPBank");
         BANK_PACKAGES.put("com.mservice.momopay", "MoMo");
@@ -73,6 +77,10 @@ public class BankNotificationParser {
             if (lowerPkg.contains("mbmobile") || lowerPkg.contains("mbbank") || lowerPkg.contains("mb.android")) {
                 return true;
             }
+            // BIDV
+            if (lowerPkg.contains("bidv") || lowerPkg.contains("smartbanking")) {
+                return true;
+            }
             for (String key : BANK_PACKAGES.keySet()) {
                 if (lowerPkg.contains(key.toLowerCase(Locale.ROOT))) {
                     return true;
@@ -85,6 +93,11 @@ public class BankNotificationParser {
 
         // MB Bank keywords
         if (norm.contains("mbbank") || norm.contains("mb bank") || norm.contains("mb-bank") || norm.contains("ngan hang quan doi")) {
+            return true;
+        }
+
+        // BIDV keywords
+        if (norm.contains("bidv") || norm.contains("smartbanking") || norm.contains("smart banking") || norm.contains("dau tu va phat trien")) {
             return true;
         }
 
@@ -116,7 +129,10 @@ public class BankNotificationParser {
                 || norm.contains("tai khoan") || norm.contains("tk:") || norm.contains("tk ")
                 || norm.contains("stk") || norm.contains("so du") || norm.contains("sodu")
                 || norm.contains("so tien") || norm.contains("sotien")
-                || norm.contains("gd:") || norm.contains("gd ");
+                || norm.contains("gd:") || norm.contains("gd ")
+                || norm.contains("ps:") || norm.contains("ps ") || norm.contains("phat sinh")
+                || norm.contains("ghi no") || norm.contains("ghi co")
+                || norm.contains("dien giai") || norm.contains("so du cuoi");
 
         // Kiểm tra mẫu định dạng số tiền bằng Regex DOTALL
         Pattern amountPattern = Pattern.compile("(?s)(?:[+-]\\s*[0-9]{1,3}(?:[.,][0-9]{3})+|[0-9]{1,3}(?:[.,][0-9]{3})+\\s*(?:vnd|vnđ|vcb|mb|d|đ|dong))", Pattern.CASE_INSENSITIVE);
@@ -147,7 +163,9 @@ public class BankNotificationParser {
         String bankName = "Ngân hàng";
         if (packageName != null) {
             String lowerPkg = packageName.toLowerCase(Locale.ROOT);
-            if (lowerPkg.contains("mbmobile") || lowerPkg.contains("mbbank") || lowerPkg.contains("mb.android")) {
+            if (lowerPkg.contains("bidv") || lowerPkg.contains("smartbanking")) {
+                bankName = "BIDV";
+            } else if (lowerPkg.contains("mbmobile") || lowerPkg.contains("mbbank") || lowerPkg.contains("mb.android")) {
                 bankName = "MB Bank";
             } else {
                 for (Map.Entry<String, String> entry : BANK_PACKAGES.entrySet()) {
@@ -159,11 +177,11 @@ public class BankNotificationParser {
             }
         }
         if ("Ngân hàng".equals(bankName)) {
-            if (normContent.contains("mbbank") || normContent.contains("mb bank") || normContent.contains("mb-bank")) bankName = "MB Bank";
+            if (normContent.contains("bidv") || normContent.contains("smartbanking") || normContent.contains("smart banking") || normContent.contains("dau tu va phat trien")) bankName = "BIDV";
+            else if (normContent.contains("mbbank") || normContent.contains("mb bank") || normContent.contains("mb-bank")) bankName = "MB Bank";
             else if (normContent.contains("vietcombank") || normContent.contains("vcb")) bankName = "Vietcombank";
             else if (normContent.contains("techcombank")) bankName = "Techcombank";
             else if (normContent.contains("vpbank")) bankName = "VPBank";
-            else if (normContent.contains("bidv")) bankName = "BIDV";
             else if (normContent.contains("agribank")) bankName = "Agribank";
             else if (normContent.contains("tpbank")) bankName = "TPBank";
             else if (normContent.contains("acb")) bankName = "ACB";
@@ -179,15 +197,15 @@ public class BankNotificationParser {
             }
         }
 
-        // 2. Loại bỏ chỉ phần số dư tài khoản cuối (ví dụ "SD: 1,500,000VND") để không bóc nhầm số dư thành số tiền giao dịch
-        // KHÔNG dùng substring("so du") vì cụm "biến động số dư" ở đầu câu sẽ làm mất toàn bộ nội dung!
-        String cleanText = fullContent.replaceAll("(?i)(?:\\bSD\\b|Số\\s*dư|So\\s*du)\\s*[:=]?\\s*[0-9.,]+\\s*(?:VND|VNĐ|d|đ|dong)?", "");
+        // 2. Loại bỏ chỉ phần số dư tài khoản cuối (ví dụ "SD: 1,500,000VND", "So du cuoi: 12,345,000 VND")
+        // để không bóc nhầm số dư thành số tiền giao dịch
+        String cleanText = fullContent.replaceAll("(?i)(?:\\bSD\\b(?:\\s*(?:cuối|khả\\s*dụng|hiện\\s*tại|cuoi|kha\\s*dung|hien\\s*tai))?|Số\\s*dư(?:\\s*(?:cuối|khả\\s*dụng|hiện\\s*tại))?|So\\s*du(?:\\s*(?:cuoi|kha\\s*dung|hien\\s*tai))?)\\s*[:=]?\\s*[0-9.,]+\\s*(?:VND|VNĐ|Vnd|vnd|d|đ|dong)?", "");
 
         // 3. Tìm số tiền và loại giao dịch (INCOME hay EXPENSE)
         String type = "EXPENSE";
         double amount = 0;
 
-        // Ưu tiên Pattern 1: Dấu + hoặc - rõ ràng: "+150,000VND", "- 50.000 đ", "GD -150.000VND"
+        // Ưu tiên Pattern 1: Dấu + hoặc - rõ ràng: "+150,000VND", "- 50.000 đ", "GD -150.000VND", "PS: -150.000VND"
         // Tìm trực tiếp trên fullContent vì số dư tài khoản KHÔNG BAO GIỜ có dấu + hoặc -
         Pattern patternWithSign = Pattern.compile("([+-])\\s*([0-9]{1,3}(?:[.,][0-9]{3})+|[0-9]{4,})\\s*(?:VND|VNĐ|Vnd|vnd|d|đ|dong)?", Pattern.CASE_INSENSITIVE);
         Matcher matcher = patternWithSign.matcher(fullContent);
@@ -201,16 +219,21 @@ public class BankNotificationParser {
             } catch (Exception ignored) {}
         }
 
-        // Pattern 2: Tìm số tiền sau từ khóa giao dịch (GD, thanh toan, chi, cong, tru...)
+        // Pattern 2: Tìm số tiền sau từ khóa giao dịch (Ghi có, Ghi nợ, GD, PS, thanh toan, chi, cong, tru...)
         if (amount <= 0) {
-            Pattern patternKw = Pattern.compile("(?:thanh toán|thanh toan|chuyển|chuyen|chi|trừ|tru|rút|rut|nhận|nhan|cộng|cong|số tiền|sotien|gd:?|giao dich:?)\\s*(?:thành công)?\\s*:?\\s*([+-]?\\s*[0-9]{1,3}(?:[.,][0-9]{3})+|[0-9]{4,})\\s*(?:VND|VNĐ|Vnd|vnd|d|đ|dong)?", Pattern.CASE_INSENSITIVE);
+            Pattern patternKw = Pattern.compile("(?i)(?:ghi\\s*nợ|ghi\\s*no|ghi\\s*có|ghi\\s*co|thanh\\s*toán|thanh\\s*toan|chuyển|chuyen|chi|trừ|tru|rút|rut|nhận|nhan|cộng|cong|tăng|tang|giảm|giam|phát\\s*sinh|phat\\s*sinh|\\bps\\b:?|số\\s*tiền(?:\\s*gd|\\s*giao\\s*dịch|\\s*phát\\s*sinh)?|so\\s*tien(?:\\s*gd|\\s*giao\\s*dich|\\s*phat\\s*sinh)?|gd:?|giao\\s*dịch:?|giao\\s*dich:?)\\s*(?:thành\\s*công)?\\s*[:=]?\\s*([+-]?\\s*(?:[0-9]{1,3}(?:[.,][0-9]{3})+|[0-9]{4,}))\\s*(?:VND|VNĐ|Vnd|vnd|d|đ|dong)?", Pattern.CASE_INSENSITIVE);
             Matcher m2 = patternKw.matcher(cleanText);
             if (m2.find()) {
                 String fullMatched = m2.group(0).toLowerCase(Locale.ROOT);
                 String numStr = m2.group(1).replaceAll("[^0-9]", "");
                 try {
                     amount = Double.parseDouble(numStr);
-                    if (fullMatched.contains("nhận") || fullMatched.contains("nhan") || fullMatched.contains("cộng") || fullMatched.contains("cong") || fullMatched.contains("+")) {
+                    if (fullMatched.contains("nhận") || fullMatched.contains("nhan")
+                            || fullMatched.contains("cộng") || fullMatched.contains("cong")
+                            || fullMatched.contains("ghi có") || fullMatched.contains("ghi co")
+                            || fullMatched.contains("tăng") || fullMatched.contains("tang")
+                            || fullMatched.contains("+")
+                            || normContent.contains("ghi co") || normContent.contains("cong tien") || normContent.contains("nhan tien") || normContent.contains("chuyen den")) {
                         type = "INCOME";
                     } else {
                         type = "EXPENSE";
@@ -227,7 +250,11 @@ public class BankNotificationParser {
                 String numStr = m3.group(1).replaceAll("[^0-9]", "");
                 try {
                     amount = Double.parseDouble(numStr);
-                    type = "EXPENSE";
+                    if (normContent.contains("ghi co") || normContent.contains("cong tien") || normContent.contains("nhan tien") || normContent.contains("chuyen den")) {
+                        type = "INCOME";
+                    } else {
+                        type = "EXPENSE";
+                    }
                 } catch (Exception ignored) {}
             }
         }
@@ -255,23 +282,29 @@ public class BankNotificationParser {
     }
 
     private static String extractNote(String text, String bankName) {
-        // Tìm sau các tiền tố ND:, Nội dung:, tai, cho, tu. Ngăn cách bởi dấu chấm, xuống dòng, chấm phẩy hoặc dấu gạch đứng |
-        Pattern notePattern = Pattern.compile("(?:ND|Noi dung|Nội dung)\\s*[:=]?\\s*([^.\\n;|]+)", Pattern.CASE_INSENSITIVE);
+        // Tìm sau các tiền tố ND:, Nội dung:, Dien giai:, Mo ta:, Ly do:...
+        Pattern notePattern = Pattern.compile(
+                "(?i)(?:\\bND\\b|\\bNoi\\s*dung\\b|\\bNội\\s*dung\\b|\\bDien\\s*giai\\b|\\bDiễn\\s*giải\\b|\\bMo\\s*ta\\b|\\bMô\\s*tả\\b|\\bLy\\s*do\\b|\\bLý\\s*do\\b)\\s*[:=]?\\s*([^\\n;|]+)"
+        );
         Matcher m = notePattern.matcher(text);
         if (m.find()) {
             String note = m.group(1).trim();
-            // Nếu có dính cụm SD hoặc Số dư ở đuôi thì cắt bỏ
-            note = note.replaceAll("(?i)\\s+(?:SD|So du|Số dư).*$", "").trim();
+            // Cắt bỏ phần số dư hoặc mã tham chiếu nếu nằm cùng dòng sau dấu chấm hoặc khoảng trắng
+            note = note.replaceAll("(?i)\\s*[.,]?\\s*(?:SD|So\\s*du|Số\\s*dư|Ref|Ma\\s*GD|Mã\\s*GD).*$", "");
+            note = note.replaceAll("[.;,\\s]+$", "").trim();
             if (!note.isEmpty()) {
                 return note;
             }
         }
 
-        Pattern atPattern = Pattern.compile("(?:tại|tai|cho|từ|tu)\\s+([^.\\n;|]+)", Pattern.CASE_INSENSITIVE);
+        Pattern atPattern = Pattern.compile(
+                "(?i)(?:(?:\\btại\\b|\\btai\\b)(?!\\s*(?:khoản|khoan|ngân\\s*hàng|ngan\\s*hang|bidv|vcb|mb|tpbank|acb|techcombank|vietinbank))|(?:\\bcho\\b|\\btừ\\b|\\btu\\b))\\s+([^\\n;|]+)"
+        );
         Matcher m2 = atPattern.matcher(text);
         if (m2.find()) {
             String note = m2.group(1).trim();
-            note = note.replaceAll("(?i)\\s+(?:SD|So du|Số dư).*$", "").trim();
+            note = note.replaceAll("(?i)\\s*[.,]?\\s*(?:SD|So\\s*du|Số\\s*dư|Ref|Ma\\s*GD|Mã\\s*GD).*$", "");
+            note = note.replaceAll("[.;,\\s]+$", "").trim();
             if (!note.isEmpty()) {
                 return note;
             }
@@ -280,68 +313,71 @@ public class BankNotificationParser {
         return "Giao dịch qua " + bankName;
     }
 
+    private static final Pattern PAT_INCOME_SALARY = Pattern.compile("(?i)\\b(?:luong|salary|thu\\s*nhap|tam\\s*ung)\\b");
+    private static final Pattern PAT_INCOME_BONUS = Pattern.compile("(?i)\\b(?:thuong|bonus|hoa\\s*hong)\\b");
+    private static final Pattern PAT_INCOME_GIFT = Pattern.compile("(?i)\\b(?:cho|tang|li\\s*xi|mung\\s*tuoi|sinh\\s*nhat)\\b");
+
+    private static final Pattern PAT_BILL = Pattern.compile("(?i)\\b(?:dien(?!\\s*giai\\b)|nuoc|mang|internet|viettel|vnpt|fpt|truyen\\s*hinh|hoa\\s*don|cuoc|phi\\s*quan\\s*ly|evn|dien\\s*luc|cap\\s*nuoc)\\b");
+    private static final Pattern PAT_FOOD = Pattern.compile("(?i)(?:(?<!\\.)\\bcom(?!\\.)\\b|\\b(?:pho|bun|an\\s*uong|an\\s*trua|an\\s*toi|an\\s*sang|banh\\s*mi|do\\s*an|thuc\\s*an|an|uong|coffee|cafe|ca\\s*phe|highlands|starbucks|phuc\\s*long|tra\\s*sua|food|pizza|kfc|lotteria|burger|nha\\s*hang|quan\\s*an|quan\\s*nuoc|quan\\s*cafe|grabfood|shopeefood|baemin)\\b)");
+    private static final Pattern PAT_TRANSPORT = Pattern.compile("(?i)\\b(?:xang|do\\s*xang|xe|grab|be|gojek|taxi|ve\\s*xe|gui\\s*xe|mai\\s*linh|vinfast|xanh\\s*sm|epass|vetc|thu\\s*phi)\\b");
+    private static final Pattern PAT_SHOPPING = Pattern.compile("(?i)\\b(?:shopee|lazada|tiki|tiktok|shop|quan\\s*ao|giay|dep|thoi\\s*trang|tui\\s*xach|sieu\\s*thi|mart|winmart|circle\\s*k|gs25|bach\\s*hoa|co\\.op|big\\s*c|emart|mua\\s*sam|mua\\s*hang)\\b");
+    private static final Pattern PAT_HEALTH = Pattern.compile("(?i)\\b(?:thuoc|benh\\s*vien|phong\\s*kham|bac\\s*si|pharmacy|pharmacity|long\\s*chau|an\\s*khang|nha\\s*khoa|y\\s*te|kham\\s*benh)\\b");
+    private static final Pattern PAT_EDUCATION = Pattern.compile("(?i)\\b(?:hoc|sach|vo|hoc\\s*phi|khoa\\s*hoc|toeic|ielts|truong|fahasa)\\b");
+    private static final Pattern PAT_ENTERTAINMENT = Pattern.compile("(?i)\\b(?:phim|xem\\s*phim|game|cgv|bhd|lotte|galaxy|steam|garena|netflix|spotify|du\\s*lich|booking|travel|agoda)\\b");
+    private static final Pattern PAT_HOUSING = Pattern.compile("(?i)\\b(?:tien\\s*nha|thue\\s*nha|phong\\s*tro|sua\\s*nha)\\b");
+
     private static String classifyCategory(String type, String note, String normFull) {
         String combined = (note + " " + normFull).toLowerCase(Locale.ROOT);
         String norm = AiAssistantManager.stripAccents(combined);
 
         if ("INCOME".equalsIgnoreCase(type)) {
-            if (norm.contains("luong") || norm.contains("salary") || norm.contains("thu nhap") || norm.contains("tam ung")) {
+            if (PAT_INCOME_SALARY.matcher(norm).find()) {
                 return "Lương";
-            } else if (norm.contains("thuong") || norm.contains("bonus") || norm.contains("hoa hong")) {
+            } else if (PAT_INCOME_BONUS.matcher(norm).find()) {
                 return "Thưởng";
-            } else if (norm.contains("cho") || norm.contains("tang") || norm.contains("li xi") || norm.contains("mung tuoi")) {
+            } else if (PAT_INCOME_GIFT.matcher(norm).find()) {
                 return "Tiền được cho";
             }
             return "Thu nhập khác";
         } else {
             // Chi tiêu (EXPENSE)
-            if (norm.contains("com") || norm.contains("pho") || norm.contains("bun") || norm.contains("an ") || norm.contains("uong")
-                    || norm.contains("coffee") || norm.contains("cafe") || norm.contains("highlands") || norm.contains("starbucks")
-                    || norm.contains("phuc long") || norm.contains("tra sua") || norm.contains("food") || norm.contains("pizza")
-                    || norm.contains("kfc") || norm.contains("lotteria") || norm.contains("burger") || norm.contains("quan")
-                    || norm.contains("nha hang") || norm.contains("grabfood") || norm.contains("shopeefood") || norm.contains("baemin")) {
-                return "Ăn uống";
-            }
-
-            if (norm.contains("xang") || norm.contains("xe") || norm.contains("grab") || norm.contains("be ") || norm.contains("gojek")
-                    || norm.contains("taxi") || norm.contains("ve xe") || norm.contains("gui xe") || norm.contains("mai linh")
-                    || norm.contains("vinfast") || norm.contains("xanh sm") || norm.contains("epass") || norm.contains("vetc") || norm.contains("thu phi")) {
-                return "Đi lại";
-            }
-
-            if (norm.contains("shopee") || norm.contains("lazada") || norm.contains("tiki") || norm.contains("tiktok")
-                    || norm.contains("shop") || norm.contains("quan ") || norm.contains("ao ") || norm.contains("giay")
-                    || norm.contains("sieu thi") || norm.contains("mart") || norm.contains("winmart") || norm.contains("circle k")
-                    || norm.contains("gs25") || norm.contains("bach hoa") || norm.contains("co.op") || norm.contains("big c")
-                    || norm.contains("emart") || norm.contains("mua sam") || norm.contains("mua hang")) {
-                return "Mua sắm";
-            }
-
-            if (norm.contains("dien") || norm.contains("nuoc") || norm.contains("mang") || norm.contains("internet")
-                    || norm.contains("viettel") || norm.contains("vnpt") || norm.contains("fpt") || norm.contains("truyen hinh")
-                    || norm.contains("hoa don") || norm.contains("cuoc") || norm.contains("phi quan ly") || norm.contains("evn")) {
+            // 1. Hóa đơn (ưu tiên nhận diện trước khi quét từ chung)
+            if (PAT_BILL.matcher(norm).find()) {
                 return "Hóa đơn";
             }
 
-            if (norm.contains("hoc") || norm.contains("sach") || norm.contains("vo") || norm.contains("hoc phi")
-                    || norm.contains("khoa hoc") || norm.contains("toeic") || norm.contains("ielts") || norm.contains("truong")) {
-                return "Học tập";
+            // 2. Ăn uống (dùng word boundary để không nhầm toan/hoan/khoan thành an)
+            if (PAT_FOOD.matcher(norm).find()) {
+                return "Ăn uống";
             }
 
-            if (norm.contains("phim") || norm.contains("game") || norm.contains("cgv") || norm.contains("bhd")
-                    || norm.contains("lotte") || norm.contains("galaxy") || norm.contains("steam") || norm.contains("garena")
-                    || norm.contains("netflix") || norm.contains("spotify") || norm.contains("du lich") || norm.contains("booking")
-                    || norm.contains("travel") || norm.contains("agoda")) {
-                return "Giải trí";
+            // 3. Đi lại (dùng word boundary để không nhầm xem thành xe)
+            if (PAT_TRANSPORT.matcher(norm).find()) {
+                return "Đi lại";
             }
 
-            if (norm.contains("thuoc") || norm.contains("benh vien") || norm.contains("phong kham") || norm.contains("bac si")
-                    || norm.contains("pharmacy") || norm.contains("pharmacity") || norm.contains("long chau") || norm.contains("an khang")
-                    || norm.contains("nha khoa") || norm.contains("y te")) {
+            // 4. Mua sắm
+            if (PAT_SHOPPING.matcher(norm).find()) {
+                return "Mua sắm";
+            }
+
+            // 5. Sức khỏe
+            if (PAT_HEALTH.matcher(norm).find()) {
                 return "Sức khỏe";
             }
 
-            if (norm.contains("tien nha") || norm.contains("thue nha") || norm.contains("phong tro") || norm.contains("sua nha")) {
+            // 6. Học tập
+            if (PAT_EDUCATION.matcher(norm).find()) {
+                return "Học tập";
+            }
+
+            // 7. Giải trí
+            if (PAT_ENTERTAINMENT.matcher(norm).find()) {
+                return "Giải trí";
+            }
+
+            // 8. Nhà ở
+            if (PAT_HOUSING.matcher(norm).find()) {
                 return "Nhà ở";
             }
 

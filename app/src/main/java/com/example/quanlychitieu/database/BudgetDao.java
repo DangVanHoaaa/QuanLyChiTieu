@@ -36,4 +36,19 @@ public interface BudgetDao {
 
     @Query("SELECT * FROM budgets WHERE month = :month AND categoryId = :categoryId LIMIT 1")
     Budget getCategoryBudgetSync(String month, int categoryId);
+
+    @Query("UPDATE budgets SET categoryId = :newId WHERE categoryId = :oldId")
+    void updateCategoryIdSync(int oldId, int newId);
+
+    @Query("SELECT DISTINCT month FROM budgets ORDER BY month DESC")
+    LiveData<List<String>> getAllBudgetMonths();
+
+    @Query("SELECT DISTINCT month FROM budgets ORDER BY month DESC")
+    List<String> getAllBudgetMonthsSync();
+
+    @Query("SELECT * FROM budgets WHERE categoryId = 0 ORDER BY month DESC")
+    LiveData<List<Budget>> getAllTotalBudgets();
+
+    @Query("SELECT * FROM budgets WHERE categoryId = 0 ORDER BY month DESC")
+    List<Budget> getAllTotalBudgetsSync();
 }

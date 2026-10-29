@@ -74,7 +74,7 @@
                     android:padding="8dp"
                     android:src="@drawable/ic_palette" />
 
-                <!-- Nút mở Trợ lý AI -->
+                <!-- Nút mở Trợ lý -->
                 <LinearLayout
                     android:id="@+id/btn_open_ai_chatbot"
                     android:layout_width="wrap_content"
@@ -95,7 +95,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="6dp"
-                        android:text="Trợ lý AI"
+                        android:text="Trợ lý"
                         android:textColor="@color/primary"
                         android:textSize="13sp"
                         android:textStyle="bold" />

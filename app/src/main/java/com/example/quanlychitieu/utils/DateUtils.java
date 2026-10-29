@@ -49,7 +49,11 @@ public class DateUtils {
     }
 
     public static String[] getStartAndEndOfWeek() {
-        Calendar cal = Calendar.getInstance();
+        return getStartAndEndOfWeek(Calendar.getInstance());
+    }
+
+    public static String[] getStartAndEndOfWeek(Calendar calInput) {
+        Calendar cal = (Calendar) calInput.clone();
         cal.set(Calendar.DAY_OF_WEEK, cal.getFirstDayOfWeek());
         String start = ISO_DATE_FORMAT.format(cal.getTime());
         cal.add(Calendar.DAY_OF_WEEK, 6);
@@ -64,17 +68,43 @@ public class DateUtils {
             if (date != null) {
                 cal.setTime(date);
             }
-            cal.set(Calendar.DAY_OF_MONTH, 1);
-            String start = ISO_DATE_FORMAT.format(cal.getTime());
-            cal.set(Calendar.DAY_OF_MONTH, cal.getActualMaximum(Calendar.DAY_OF_MONTH));
-            String end = ISO_DATE_FORMAT.format(cal.getTime());
-            return new String[]{start, end};
+            return getStartAndEndOfMonth(cal);
         } catch (Exception e) {
             return new String[]{getTodayIso(), getTodayIso()};
         }
     }
 
+    public static String[] getStartAndEndOfMonth(Calendar calInput) {
+        Calendar cal = (Calendar) calInput.clone();
+        cal.set(Calendar.DAY_OF_MONTH, 1);
+        String start = ISO_DATE_FORMAT.format(cal.getTime());
+        cal.set(Calendar.DAY_OF_MONTH, cal.getActualMaximum(Calendar.DAY_OF_MONTH));
+        String end = ISO_DATE_FORMAT.format(cal.getTime());
+        return new String[]{start, end};
+    }
+
     public static String[] getStartAndEndOfYear(String yearStr) {
         return new String[]{yearStr + "-01-01", yearStr + "-12-31"};
+    }
+
+    public static String[] getStartAndEndOfYear(Calendar calInput) {
+        int year = calInput.get(Calendar.YEAR);
+        return new String[]{year + "-01-01", year + "-12-31"};
+    }
+
+    public static String formatMonthIso(Calendar cal) {
+        return MONTH_FORMAT.format(cal.getTime());
+    }
+
+    public static String formatYearIso(Calendar cal) {
+        return YEAR_FORMAT.format(cal.getTime());
+    }
+
+    public static String formatDisplayMonth(Calendar cal) {
+        return "Tháng " + DISPLAY_MONTH_FORMAT.format(cal.getTime());
+    }
+
+    public static String formatDisplayYear(Calendar cal) {
+        return "Năm " + YEAR_FORMAT.format(cal.getTime());
     }
 }

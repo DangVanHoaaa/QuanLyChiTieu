@@ -233,14 +233,24 @@ public class TransactionDialogHelper {
             String iconName = type.equals("INCOME") ? "ic_cat_income_other" : "ic_cat_expense_other";
             String colorHex = type.equals("INCOME") ? "#16A34A" : "#EF4444";
 
-            Category newCat = new Category(name, type, iconName, colorHex);
-            repository.insertCategory(newCat, id -> {
+            repository.checkCategoryExists(name, type, exists -> {
                 new Handler(Looper.getMainLooper()).post(() -> {
-                    catDialog.dismiss();
-                    Toast.makeText(context, "Đã thêm danh mục: " + name, Toast.LENGTH_SHORT).show();
-                    if (onCategoryAdded != null) {
-                        onCategoryAdded.run();
+                    if (exists) {
+                        Toast.makeText(context, "Danh mục '" + name + "' đã tồn tại!", Toast.LENGTH_SHORT).show();
+                        etName.requestFocus();
+                        return;
                     }
+
+                    Category newCat = new Category(name, type, iconName, colorHex);
+                    repository.insertCategory(newCat, id -> {
+                        new Handler(Looper.getMainLooper()).post(() -> {
+                            catDialog.dismiss();
+                            Toast.makeText(context, "Đã thêm danh mục: " + name, Toast.LENGTH_SHORT).show();
+                            if (onCategoryAdded != null) {
+                                onCategoryAdded.run();
+                            }
+                        });
+                    });
                 });
             });
         });

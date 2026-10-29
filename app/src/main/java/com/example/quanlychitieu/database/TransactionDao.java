@@ -78,4 +78,10 @@ public interface TransactionDao {
 
     @Query("SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE type = 'EXPENSE' AND categoryId = :categoryId AND date LIKE :monthPrefix || '%'")
     Double getMonthlyExpenseByCategorySync(String monthPrefix, int categoryId);
+
+    @Query("UPDATE transactions SET categoryId = :newId WHERE categoryId = :oldId")
+    void updateCategoryIdSync(int oldId, int newId);
+
+    @Query("SELECT DISTINCT substr(date, 1, 7) FROM transactions ORDER BY substr(date, 1, 7) DESC")
+    List<String> getAllTransactionMonthsSync();
 }

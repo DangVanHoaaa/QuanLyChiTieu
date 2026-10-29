@@ -15,7 +15,13 @@ import com.example.quanlychitieu.model.SavingsGoal;
 import com.example.quanlychitieu.model.Transaction;
 import com.example.quanlychitieu.utils.DateUtils;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -38,12 +44,38 @@ public class ExpenseRepository {
         savingsGoalDao = db.savingsGoalDao();
         executorService = Executors.newFixedThreadPool(4);
 
-        // Đảm bảo luôn nạp danh mục mặc định vào cơ sở dữ liệu nếu chưa có
+        // Đảm bảo loại bỏ các danh mục trùng lặp đã tồn tại và khởi tạo danh mục nếu thiếu
         executorService.execute(() -> {
-            if (categoryDao.getCategoryCount() == 0) {
-                initDefaultCategories();
-            }
+            deduplicateCategoriesSync();
+            initDefaultCategories();
         });
+    }
+
+    public void deduplicateCategoriesSync() {
+        List<Category> allCategories = categoryDao.getAllCategoriesSync();
+        if (allCategories == null || allCategories.isEmpty()) return;
+
+        Map<String, Category> uniqueMap = new HashMap<>();
+        List<Category> duplicatesToRemove = new ArrayList<>();
+
+        for (Category cat : allCategories) {
+            if (cat.getName() == null) continue;
+            String key = (cat.getType() != null ? cat.getType().toUpperCase() : "") + "_" + cat.getName().trim().toLowerCase();
+            if (!uniqueMap.containsKey(key)) {
+                uniqueMap.put(key, cat);
+            } else {
+                Category original = uniqueMap.get(key);
+                duplicatesToRemove.add(cat);
+                if (original != null) {
+                    transactionDao.updateCategoryIdSync(cat.getId(), original.getId());
+                    budgetDao.updateCategoryIdSync(cat.getId(), original.getId());
+                }
+            }
+        }
+
+        for (Category dup : duplicatesToRemove) {
+            categoryDao.deleteSync(dup);
+        }
     }
 
     private void initDefaultCategories() {
@@ -63,7 +95,11 @@ public class ExpenseRepository {
         list.add(new Category("Nhà ở", "EXPENSE", "ic_cat_home", "#6366F1"));
         list.add(new Category("Chi tiêu khác", "EXPENSE", "ic_cat_expense_other", "#64748B"));
 
-        categoryDao.insertAll(list);
+        for (Category c : list) {
+            if (categoryDao.getCategoryByNameAndTypeSync(c.getName(), c.getType()) == null) {
+                categoryDao.insert(c);
+            }
+        }
     }
 
     // --- TRANSACTIONS ---
@@ -163,9 +199,24 @@ public class ExpenseRepository {
 
     public void insertCategory(Category category, Callback<Long> callback) {
         executorService.execute(() -> {
-            long id = categoryDao.insert(category);
+            Category existing = categoryDao.getCategoryByNameAndTypeSync(category.getName(), category.getType());
+            long id;
+            if (existing != null) {
+                id = existing.getId();
+            } else {
+                id = categoryDao.insert(category);
+            }
             if (callback != null) {
                 callback.onComplete(id);
+            }
+        });
+    }
+
+    public void checkCategoryExists(String name, String type, Callback<Boolean> callback) {
+        executorService.execute(() -> {
+            Category existing = categoryDao.getCategoryByNameAndTypeSync(name, type);
+            if (callback != null) {
+                callback.onComplete(existing != null);
             }
         });
     }
@@ -231,6 +282,66 @@ public class ExpenseRepository {
             Double spent = transactionDao.getMonthlyExpenseByCategorySync(monthPrefix, categoryId);
             if (callback != null) {
                 callback.onComplete(spent != null ? spent : 0.0);
+            }
+        });
+    }
+
+    public static class BudgetHistoryItem {
+        private final String month;
+        private final double totalBudget;
+        private final double totalSpent;
+        private final boolean hasBudget;
+
+        public BudgetHistoryItem(String month, double totalBudget, double totalSpent, boolean hasBudget) {
+            this.month = month;
+            this.totalBudget = totalBudget;
+            this.totalSpent = totalSpent;
+            this.hasBudget = hasBudget;
+        }
+
+        public String getMonth() { return month; }
+        public double getTotalBudget() { return totalBudget; }
+        public double getTotalSpent() { return totalSpent; }
+        public boolean isHasBudget() { return hasBudget; }
+        public double getRemaining() { return totalBudget - totalSpent; }
+        public int getPercent() {
+            if (totalBudget <= 0) return 0;
+            return (int) Math.round((totalSpent / totalBudget) * 100);
+        }
+    }
+
+    public void getBudgetHistory(Callback<List<BudgetHistoryItem>> callback) {
+        executorService.execute(() -> {
+            Set<String> monthSet = new TreeSet<>(Collections.reverseOrder());
+
+            // Lấy các tháng từ budgets
+            List<String> budgetMonths = budgetDao.getAllBudgetMonthsSync();
+            if (budgetMonths != null) {
+                monthSet.addAll(budgetMonths);
+            }
+
+            // Lấy các tháng từ transactions
+            List<String> transMonths = transactionDao.getAllTransactionMonthsSync();
+            if (transMonths != null) {
+                monthSet.addAll(transMonths);
+            }
+
+            // Đảm bảo luôn có tháng hiện tại
+            monthSet.add(DateUtils.getCurrentMonth());
+
+            List<BudgetHistoryItem> historyList = new ArrayList<>();
+            for (String m : monthSet) {
+                if (m == null || m.length() != 7) continue;
+                Budget b = budgetDao.getTotalBudgetByMonthSync(m);
+                Double spent = transactionDao.getMonthlyExpenseSync(m);
+                double budgetAmt = (b != null) ? b.getAmount() : 0.0;
+                double spentAmt = (spent != null) ? spent : 0.0;
+                boolean hasB = (b != null && b.getAmount() > 0);
+                historyList.add(new BudgetHistoryItem(m, budgetAmt, spentAmt, hasB));
+            }
+
+            if (callback != null) {
+                callback.onComplete(historyList);
             }
         });
     }
